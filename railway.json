@@ -1,0 +1,75 @@
+{
+    "$schema": "https://railway.app/railway.schema.json",
+    "services": [
+        {
+            "name": "apollo-mcp",
+            "description": "Apollo GraphQL MCP Server that exposes GraphQL APIs as tools for AI agents.",
+            "rootDirectory": "apollo-mcp",
+            "icon": "https://raw.githubusercontent.com/apollo-graphql/apollo-server/main/packages/server/server.jpg",
+            "build": {
+                "builder": "DOCKERFILE",
+                "dockerfilePath": "Dockerfile"
+            },
+            "deploy": {
+                "restartPolicyType": "ON_FAILURE",
+                "numReplicas": 1
+            },
+            "variables": {
+                "PORT": "3000",
+                "APOLLO_MCP_ENDPOINT": {
+                    "description": "The GraphQL Endpoint URL to connect to (e.g. https://api.github.com/graphql)",
+                    "defaultValue": "https://api.github.com/graphql"
+                },
+                "APOLLO_KEY": {
+                    "description": "API Key for the Endpoint (e.g. GitHub Token)",
+                    "required": false
+                },
+                "GRAPHQL_READ_ONLY": {
+                    "description": "Prevent Mutations (Recommended for untrusted agents)",
+                    "defaultValue": "true"
+                },
+                "AUTH_TYPE": {
+                    "description": "Authorization header type (Bearer or x-api-key)",
+                    "defaultValue": "Bearer",
+                    "required": false
+                }
+            }
+        },
+        {
+            "name": "directql",
+            "description": "Open Web UI Chat Interface (ChatGPT clone) configured for OpenRouter/DirectQL.",
+            "rootDirectory": "open-webui",
+            "icon": "https://github.com/open-webui/open-webui/raw/main/static/favicon.png",
+            "build": {
+                "builder": "DOCKERFILE",
+                "dockerfilePath": "Dockerfile"
+            },
+            "deploy": {
+                "restartPolicyType": "ON_FAILURE",
+                "numReplicas": 1
+            },
+            "variables": {
+                "PORT": "8080",
+                "OPENAI_API_BASE_URL": {
+                    "description": "API Base URL (e.g. OpenRouter)",
+                    "defaultValue": "https://openrouter.ai/api/v1"
+                },
+                "OPENAI_API_KEY": {
+                    "description": "Your OpenRouter or OpenAI API Key"
+                },
+                "ENABLE_OPENAI_API": {
+                    "description": "Enable OpenAI-compatible API usage",
+                    "defaultValue": "true"
+                },
+                "WEBUI_SECRET_KEY": {
+                    "description": "Random string to secure sessions",
+                    "defaultValue": "change-this-to-a-secure-random-string"
+                },
+                "GRAPHQL_READ_ONLY": {
+                    "description": "Enforce read-only mode in UI if applicable",
+                    "defaultValue": "true"
+                }
+            }
+        }
+    ]
+}

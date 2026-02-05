@@ -19,7 +19,7 @@
                 "numReplicas": 1
             },
             "variables": {
-                "PORT": "3000",
+                "PORT": "8080",
                 "GRAPHQL_MCP_ENDPOINT": {
                     "description": "The GraphQL Endpoint URL to connect to (e.g. https://api.github.com/graphql)",
                     "defaultValue": "https://api.github.com/graphql"

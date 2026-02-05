@@ -50,7 +50,7 @@ This repository contains a complete **AI agent stack** designed for local develo
       GRAPHQL_MCP_ENDPOINT=https://api.github.com/graphql
       GRAPHQL_API_KEY=your_github_token
       PORT=3000
-      AUTH_TYPE=Bearer  # or x-api-key
+      AUTH_TYPE=Bearer  # or x-api-key or none
       GRAPHQL_READ_ONLY=true # Enforce read-only queries
       ```
 ---

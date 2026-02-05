@@ -120,6 +120,9 @@ app.get("/sse", async (req, res) => {
   await server.connect(transport);
 });
 
+// Middleware for parsing JSON bodies (needed for POST /sse logging/handling)
+app.use(express.json());
+
 app.post("/messages", async (req, res) => {
   const sessionId = req.query.sessionId;
   const transport = transports.get(sessionId);
@@ -130,6 +133,29 @@ app.post("/messages", async (req, res) => {
   }
 
   await transport.handlePostMessage(req, res);
+});
+
+// Handle POST /sse to support clients that Default to POSTing to the endpoint
+// Open WebUI verification seems to POST to /sse
+app.post("/sse", async (req, res) => {
+  console.log(`[${new Date().toISOString()}] Handling POST /sse`);
+  console.log('Body:', JSON.stringify(req.body));
+
+  const sessionId = req.query.sessionId;
+
+  if (sessionId) {
+    console.log(`Routing POST /sse to transport session: ${sessionId}`);
+    const transport = transports.get(sessionId);
+    if (transport) {
+      await transport.handlePostMessage(req, res);
+      return;
+    }
+  }
+
+  // If no session ID, it might be a verification ping or stateless request attempt.
+  // For now, return 200 OK to pass verification if it's just checking existence.
+  // But strictly, MCP needs SSE to reply.
+  res.status(200).json({ status: "ok", message: "Use GET /sse to establish connection first" });
 });
 
 app.listen(port, () => {

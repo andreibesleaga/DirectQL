@@ -38,6 +38,58 @@ app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok" });
 });
 
+app.get("/openapi.json", (req, res) => {
+  const protocol = req.headers["x-forwarded-proto"] || req.protocol;
+  const host = req.get("host");
+  const serverUrl = `${protocol}://${host}`;
+
+  res.json({
+    openapi: "3.0.1",
+    info: {
+      title: "GraphQL MCP Server",
+      description: "Model Context Protocol Server for GraphQL",
+      version: "1.0.0"
+    },
+    servers: [
+      {
+        url: serverUrl
+      }
+    ],
+    paths: {
+      "/sse": {
+        get: {
+          summary: "Connect via Server-Sent Events",
+          responses: {
+            "200": {
+              description: "SSE Stream"
+            }
+          }
+        },
+        post: {
+          summary: "Send JSON-RPC Message",
+          requestBody: {
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object"
+                }
+              }
+            }
+          },
+          responses: {
+            "200": {
+              description: "JSON-RPC Response"
+            },
+            "204": {
+              description: "Notification Acknowledgment"
+            }
+          }
+        }
+      }
+    }
+  });
+});
+
 
 // Factory function to create a fresh McpServer instance
 function createMcpServer() {
@@ -335,8 +387,14 @@ app.post("/sse", async (req, res) => {
     await server.connect(transport);
     await transport.handleMessage(body);
 
-    // Wait for the server to process and send the response
-    await transport.responsePromise;
+    // Wait for the server to process and send the response ONLY if it's a request (has ID)
+    if (body.id !== undefined) {
+      await transport.responsePromise;
+    } else {
+      // It's a notification (no ID), just acknowledge immediately
+      console.log('Acknowledging notification with 204');
+      res.status(204).end();
+    }
 
     // Now it is safe to close
     await transport.close();

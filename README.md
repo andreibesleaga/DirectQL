@@ -2,9 +2,11 @@
 
 This repository contains a complete **AI agent stack** designed for local development and deployment of a interactive AI chat agent that can access GraphQL APIs and communicate with natural language to make requests and get information from graphql endpoints with particular focus of this version on **GitHub GraphQL APIs**.
 
-(Use case scenario: direct user communication and/or agentic AI, on federated introspective graphql schemas endpoints, with less effort/resources than REST APIs).
 
-Online deployed version: https://directql.up.railway.app (**Open WebUI, GitHub GraphQL API, Apollo Tools MCP Server, OpenRouter**).
+- Tested locally and deployed online
+- **Open WebUI, GitHub GraphQL API, Apollo Tools MCP Server, OpenRouter**
+- Use case scenario: direct user communication and/or agentic AI, on federated introspective graphql schemas endpoints, with less effort/resources than REST APIs.
+
 
 ## Services
 1. **apollo-mcp**: A server that exposes your GraphQL API as a tool for AI agents.

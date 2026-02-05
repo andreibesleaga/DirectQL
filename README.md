@@ -40,19 +40,19 @@ This repository contains a complete **AI agent stack** designed for local develo
         -   **Prompts**: Helper for writing queries (`write-graphql-query`).
     -   **Authentication**: Supports Bearer tokens and API Keys (x-api-key) for secure access to GraphQL endpoints (e.g., GitHub, Apollo Studio, etc).
 
-## Configuration
+### Configuration
 
-### Environment Variables
-Create a `.env` file in the root:
+  ### Environment Variables
+      Create a `.env` file in the root:
 
-```env
-# GraphQL MCP Server
-GRAPHQL_MCP_ENDPOINT=https://api.github.com/graphql
-GRAPHQL_API_KEY=your_github_token
-PORT=3000
-AUTH_TYPE=Bearer  # or x-api-key
-GRAPHQL_READ_ONLY=true # Enforce read-only queries
-```
+      ```env
+      # GraphQL MCP Server
+      GRAPHQL_MCP_ENDPOINT=https://api.github.com/graphql
+      GRAPHQL_API_KEY=your_github_token
+      PORT=3000
+      AUTH_TYPE=Bearer  # or x-api-key
+      GRAPHQL_READ_ONLY=true # Enforce read-only queries
+      ```
 ---
 
 ### Configuration 2: The "Fully Local"

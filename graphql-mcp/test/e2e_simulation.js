@@ -1,17 +1,21 @@
 
 import assert from 'assert';
 
-const BASE_URL = "http://localhost:3000/sse";
+
+const BASE_URL = process.env.MCP_SERVER_URL || "http://localhost:3000/sse";
 
 async function runTest() {
-    console.log("Starting E2E Simulation...");
+    console.log(`Starting E2E Simulation against: ${BASE_URL}`);
 
     // 1. Check Health/OpenAPI
     console.log("1. Checking Health and OpenAPI...");
-    const health = await fetch("http://localhost:3000/health").then(r => r.json());
+    // Parse base URL to get origin (handle /sse path)
+    const origin = new URL(BASE_URL).origin;
+
+    const health = await fetch(`${origin}/health`).then(r => r.json());
     assert.equal(health.status, "ok", "Health check failed");
 
-    const openapi = await fetch("http://localhost:3000/openapi.json").then(r => r.json());
+    const openapi = await fetch(`${origin}/openapi.json`).then(r => r.json());
     assert.equal(openapi.openapi, "3.0.1", "OpenAPI spec missing");
     console.log("✅ Health & OpenAPI OK");
 

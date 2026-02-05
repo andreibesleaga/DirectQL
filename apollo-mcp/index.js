@@ -81,8 +81,33 @@ server.tool(
 );
 
 // Mount SSE Transport
-const transport = new SSEServerTransport("/sse", app);
-server.connect(transport);
+// We need to store active transports to handle incoming POST messages
+const transports = new Map();
+
+app.get("/sse", async (req, res) => {
+  const transport = new SSEServerTransport("/messages", res);
+  const sessionId = transport.sessionId;
+
+  transports.set(sessionId, transport);
+
+  transport.onclose = () => {
+    transports.delete(sessionId);
+  };
+
+  await server.connect(transport);
+});
+
+app.post("/messages", async (req, res) => {
+  const sessionId = req.query.sessionId;
+  const transport = transports.get(sessionId);
+
+  if (!transport) {
+    res.status(404).send("Session not found");
+    return;
+  }
+
+  await transport.handlePostMessage(req, res);
+});
 
 app.listen(port, () => {
   console.log(`Apollo MCP Server running on port ${port} at /sse`);

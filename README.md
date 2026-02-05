@@ -106,10 +106,10 @@ The AI Agent can connect to the MCP Server using the following configuration:
 ## Running examples
 
 ### 1. Local setup and monitoring
-!(<temp/Screenshot1.png>)
+![Screenshot1.png](<temp/Screenshot1.png>)
 
 ### 2. Asking questions with MCP enabled on live deployment
-!(<temp/Screenshot2.png>)
+![Screenshot2.png](<temp/Screenshot2.png>)
 
 ### 3. Results received from live GitHub GraphQL API, via MCP, to AI Agent
-!(<temp/Screenshot3.png>)
+![Screenshot3.png](<temp/Screenshot3.png>)

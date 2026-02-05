@@ -16,6 +16,11 @@ const limiter = rateLimit({
 // Apply the rate limiting middleware to all requests
 app.use(limiter);
 
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
+
 // Initialize MCP Server
 const server = new McpServer({
   name: "Apollo GraphQL MCP",

@@ -19,12 +19,12 @@ jobs:
         
     - name: Install Dependencies
       run: |
-        cd apollo-mcp
+        cd graphql-mcp
         npm ci
         
     - name: Run Security Tests
       run: |
-        cd apollo-mcp
+        cd graphql-mcp
         npm test
 
   # deploy:
@@ -40,4 +40,4 @@ jobs:
   #     - name: Deploy to Railway
   #       env:
   #         RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-  #       run: railway up --service apollo-mcp --detach
+  #       run: railway up --service graphql-mcp --detach

@@ -42,7 +42,7 @@ app.get("/health", (req, res) => {
 // Factory function to create a fresh McpServer instance
 function createMcpServer() {
   const server = new McpServer({
-    name: "Apollo GraphQL MCP",
+    name: " GraphQL MCP",
     version: "1.0.0"
   });
 
@@ -97,17 +97,17 @@ function createMcpServer() {
 
   // Helper: Execute GraphQL Request
   async function executeGraphQL(query, variables = {}) {
-    const endpoint = process.env.APOLLO_MCP_ENDPOINT;
-    const apiKey = process.env.APOLLO_KEY;
+    const endpoint = process.env.GRAPHQL_MCP_ENDPOINT;
+    const apiKey = process.env.GRAPHQL_KEY;
 
     if (!endpoint) {
-      throw new Error("APOLLO_MCP_ENDPOINT not set");
+      throw new Error("GRAPHQL_MCP_ENDPOINT not set");
     }
 
     // Determine Auth Headers
     const headers = {
       "Content-Type": "application/json",
-      "User-Agent": "DirectQL/Apollo-MCP-Agent/1.0"
+      "User-Agent": "DirectQL/GraphQL-MCP-Agent/1.0"
     };
 
     if (apiKey) {
@@ -342,5 +342,5 @@ app.post("/sse", async (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Apollo MCP Server running on port ${port} at /sse`);
+  console.log(`GraphQL MCP Server running on port ${port} at /sse`);
 });

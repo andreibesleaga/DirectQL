@@ -2,10 +2,14 @@
     "$schema": "https://railway.app/railway.schema.json",
     "services": [
         {
-            "name": "Apollo MCP",
-            "description": "Apollo GraphQL MCP Server that exposes GraphQL APIs as tools for AI agents.",
-            "rootDirectory": "apollo-mcp",
-            "icon": "https://raw.githubusercontent.com/apollo-graphql/apollo-server/main/packages/server/server.jpg",
+            "serviceName": "GraphQL MCP",
+            "description": "GraphQL MCP Server that exposes GraphQL APIs as tools for AI agents.",
+            "rootDirectory": "graphql-mcp",
+            "buildCommand": "npm install",
+            "startCommand": "npm start",
+            "watchPatterns": [
+                "graphql-mcp/**/*"
+            ],
             "build": {
                 "builder": "DOCKERFILE",
                 "dockerfilePath": "Dockerfile"
@@ -16,11 +20,11 @@
             },
             "variables": {
                 "PORT": "3000",
-                "APOLLO_MCP_ENDPOINT": {
+                "GRAPHQL_MCP_ENDPOINT": {
                     "description": "The GraphQL Endpoint URL to connect to (e.g. https://api.github.com/graphql)",
                     "defaultValue": "https://api.github.com/graphql"
                 },
-                "APOLLO_KEY": {
+                "GRAPHQL_API_KEY": {
                     "description": "API Key for the Endpoint (e.g. GitHub Token)",
                     "required": false
                 },

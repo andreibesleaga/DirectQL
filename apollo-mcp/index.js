@@ -130,6 +130,52 @@ function createMcpServer() {
     return data?.data ? data.data : data;
   }
 
+  // Helper: Register Local Schema Files (Fallback/Cache)
+  async function registerLocalSchemas(server) {
+    try {
+      const { readdir, readFile } = await import("fs/promises");
+      const { join } = await import("path");
+
+      // Ensure schemas directory exists
+      const schemasDir = join(process.cwd(), "schemas");
+
+      // Verify directory exists to avoid errors if missing
+      try {
+        await readdir(schemasDir);
+      } catch {
+        console.log("No local 'schemas' directory found, skipping local resources.");
+        return;
+      }
+
+      const files = await readdir(schemasDir);
+
+      for (const file of files) {
+        if (file.endsWith(".graphql") || file.endsWith(".gql")) {
+          const resourceUri = `graphql://local/${file}`;
+          const filePath = join(schemasDir, file);
+
+          server.resource(
+            file,
+            resourceUri,
+            async (uri) => {
+              const content = await readFile(filePath, "utf-8");
+              return {
+                contents: [{
+                  uri: uri.href,
+                  text: content,
+                  mimeType: "text/plain"
+                }]
+              };
+            }
+          );
+          console.log(`Registered local resource: ${resourceUri}`);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to register local schemas:", error);
+    }
+  }
+
   // Tool: Introspect Schema
   server.tool(
     "introspect-graphql-schema",
@@ -177,7 +223,7 @@ function createMcpServer() {
     }
   );
 
-  return server;
+  return { server, registerLocalSchemas };
 }
 
 // Mount SSE Transport
@@ -188,7 +234,8 @@ const sessions = new Map();
 app.get("/sse", async (req, res) => {
   const transport = new SSEServerTransport("/messages", res);
   const sessionId = transport.sessionId;
-  const server = createMcpServer();
+  const { server, registerLocalSchemas } = createMcpServer();
+  await registerLocalSchemas(server);
 
   sessions.set(sessionId, { transport, server });
 
@@ -277,7 +324,9 @@ app.post("/sse", async (req, res) => {
   if (body && body.jsonrpc) {
     console.log('Detected Stateless JSON-RPC request');
     const transport = new StatelessHttpTransport(res);
-    const server = createMcpServer(); // Create a fresh server instance
+    const { server, registerLocalSchemas } = createMcpServer(); // Create a fresh server instance
+    await registerLocalSchemas(server);
+
     await server.connect(transport);
     await transport.handleMessage(body);
 

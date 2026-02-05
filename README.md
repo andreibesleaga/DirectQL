@@ -4,7 +4,7 @@ This repository contains a complete **AI agent stack** designed for local develo
 
 
 - **GraphQL MCP Server, Open WebUI, GitHub GraphQL API, Ollama, OpenRouter**
-- Use case scenarios: direct user communication and/or agentic AI, for federated graphql introspective schemas endpoints (with optional local schema caching registration).
+- Use case scenarios: **direct user communication and/or agentic AI, for federated graphql introspective schemas endpoints** (and optional local schema caching registration).
 
 
 ## Services

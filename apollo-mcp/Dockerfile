@@ -3,11 +3,12 @@ FROM node:18-alpine
 WORKDIR /app
 
 # Install dependencies first (caching)
-COPY package.json ./
+# Install dependencies first (caching)
+COPY apollo-mcp/package.json ./
 RUN npm install
 
 # Copy source code
-COPY . .
+COPY apollo-mcp/ .
 
 # Railway sets PORT env var automatically
 ENV PORT=3000

@@ -1,10 +1,10 @@
-# DirectQL - Interactive GraphQL AI Platform
+# DirectQL - Interactive GraphQL AI Platform with GraphQL MCP Server
 
 This repository contains a complete **AI agent stack** designed for local development and deployment of a interactive AI chat agent that can access GraphQL APIs and communicate with natural language to make requests and get information from graphql endpoints with particular focus of this version on **GitHub GraphQL APIs**.
 
 
-- **Open WebUI, GitHub GraphQL API, FUll GraphQL MCP Server, OpenRouter**
-- Use case scenario: direct user communication and/or agentic AI, on federated graphql introspective schemas endpoints (with local schema caching registration).
+- **GraphQL MCP Server, Open WebUI, GitHub GraphQL API, OpenRouter**
+- Use case scenario: direct user communication and/or agentic AI, for federated graphql introspective schemas endpoints (with optional local schema caching registration).
 
 
 ## Services
@@ -96,6 +96,7 @@ The project includes several helper scripts to verify the stack locally using Do
 The AI Agent can connect to the MCP Server using the following configuration:
 1. Open your deployed WebUI (`https://webui-xyz.app`)
 2. Go to **Admin Panel** > **Settings** > **Connections**
-3. Under **MCP**, add a new connection:
-   - **Type**: SSE
+3. Add a new connection:
+   - **Type**: MCP (SSE), not OpenAPI
    - **URL**: `https://graphql-mcp-xyz.app/sse`
+   - **Headers**: `Authorization: Bearer <your-token> / None`

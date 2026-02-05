@@ -26,18 +26,3 @@ jobs:
       run: |
         cd graphql-mcp
         npm test
-
-  # deploy:
-  #   needs: test
-  #   if: github.ref == 'refs/heads/main'
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v3
-
-  #     - name: Install Railway CLI
-  #       run: npm install -g @railway/cli
-
-  #     - name: Deploy to Railway
-  #       env:
-  #         RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-  #       run: railway up --service graphql-mcp --detach

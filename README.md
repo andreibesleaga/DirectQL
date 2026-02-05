@@ -1,6 +1,8 @@
 # DirectQL - Interactive GraphQL AI Platform
 
-This repository contains a complete AI Agent stack designed for local development and deployment of an interactive AI chat agent that can access GraphQL APIs and communicate with natural language to make requests and get information from graphql endpoints (eg: to be used with federated introspective graphql schemas endpoints for complete info with minimal effort, unlike REST APIs).
+This repository contains a complete AI Agent stack designed for local development and deployment of a interactive AI chat agent that can access GraphQL APIs and communicate with natural language to make requests and get information from graphql endpoints with particular focus of first version on GitHub GraphQL APIs.
+
+(Examples where it would useful to be used: federated introspective graphql schemas endpoints, with minimal effort, unlike REST APIs).
 
 Online deployed version: https://directql.up.railway.app (**Open WebUI, GitHub GraphQL API, Apollo Tools MCP Server, OpenRouter**).
 
@@ -52,8 +54,8 @@ Online deployed version: https://directql.up.railway.app (**Open WebUI, GitHub G
 ---
 
 The AI Agent can connect to Apollo MCP using the following configuration:
-1. Open your deployed WebUI (`https://webui-xxx.up.railway.app`)
+1. Open your deployed WebUI (`https://webui-xxx.app`)
 2. Go to **Admin Panel** > **Settings** > **Connections**
 3. Under **MCP**, add a new connection:
    - **Type**: SSE
-   - **URL**: `https://apollo-mcp-xxx.up.railway.app/sse`
+   - **URL**: `https://apollo-mcp-xxx.app/sse`

@@ -1,4 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import express from "express";
 import rateLimit from "express-rate-limit";
@@ -46,6 +46,55 @@ function createMcpServer() {
     version: "1.0.0"
   });
 
+  // Resource: GraphQL Schema
+  // Allows the LLM to "read" the schema directly via `read_resource`
+  server.resource(
+    "graphql-schema",
+    "graphql://schema",
+    async (uri, { request }) => {
+      try {
+        const { getIntrospectionQuery, printSchema, buildClientSchema } = await import("graphql");
+        const query = getIntrospectionQuery();
+        const data = await executeGraphQL(query);
+
+        // Convert JSON introspection to SDL (Schema Definition Language) for readability
+        const schema = buildClientSchema(data);
+        const sdl = printSchema(schema);
+
+        return {
+          contents: [{
+            uri: uri.href,
+            text: sdl,
+            mimeType: "text/plain" // or application/graphql
+          }]
+        };
+      } catch (error) {
+        throw new Error(`Failed to fetch schema resource: ${error.message}`);
+      }
+    }
+  );
+
+  // Prompt: Write GraphQL Query
+  // Helper to guide the LLM in constructing a query
+  server.prompt(
+    "write-graphql-query",
+    "Generate a valid GraphQL query for the user's request using the schema.",
+    { request: { type: "string", description: "What data does the user want?" } },
+    ({ request }) => {
+      return {
+        messages: [
+          {
+            role: "user",
+            content: {
+              type: "text",
+              text: `Please generate a GraphQL query to answer: "${request}".\nUse the 'graphql://schema' resource to inspect available types.`
+            }
+          }
+        ]
+      };
+    }
+  );
+
   // Helper: Execute GraphQL Request
   async function executeGraphQL(query, variables = {}) {
     const endpoint = process.env.APOLLO_MCP_ENDPOINT;
@@ -76,7 +125,9 @@ function createMcpServer() {
     });
 
     const data = await response.json();
-    return data;
+    // GraphQL errors are 200 OK generally, but might contain errors array.
+    // We pass the whole data back for inspection.
+    return data?.data ? data.data : data;
   }
 
   // Tool: Introspect Schema

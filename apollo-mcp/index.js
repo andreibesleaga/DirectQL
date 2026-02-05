@@ -135,14 +135,54 @@ app.post("/messages", async (req, res) => {
   await transport.handlePostMessage(req, res);
 });
 
+// Stateless Transport for handling direct HTTP POSTs (Open WebUI Hybrid Mode)
+class StatelessHttpTransport {
+  constructor(res) {
+    this.res = res;
+    this.onmessage = undefined;
+    this.onclose = undefined;
+    this.onerror = undefined;
+  }
+
+  async start() {
+    // No-op for stateless
+  }
+
+  async close() {
+    if (this.onclose) {
+      this.onclose();
+    }
+  }
+
+  // Called by McpServer when it wants to send a message back to client
+  async send(message) {
+    // For stateless HTTP, we take the first message and send it as the HTTP response.
+    // NOTE: This assumes 1 Request -> 1 Response.
+    // If McpServer sends multiple notifications, this might break or we ignore subsequent ones.
+    // For 'initialize' and 'call_tool', it's usually 1-to-1.
+    if (!this.res.headersSent) {
+      this.res.json(message);
+    }
+  }
+
+  // Called by us to inject the incoming message
+  async handleMessage(message) {
+    if (this.onmessage) {
+      this.onmessage(message);
+    }
+  }
+}
+
 // Handle POST /sse to support clients that Default to POSTing to the endpoint
-// Open WebUI verification seems to POST to /sse
+// Open WebUI verification seems to POST to /sse with JSON-RPC body
 app.post("/sse", async (req, res) => {
   console.log(`[${new Date().toISOString()}] Handling POST /sse`);
-  console.log('Body:', JSON.stringify(req.body));
+  const body = req.body;
+  console.log('Body:', JSON.stringify(body));
 
   const sessionId = req.query.sessionId;
 
+  // Case 1: Standard SSE Post-Back (with Session ID)
   if (sessionId) {
     console.log(`Routing POST /sse to transport session: ${sessionId}`);
     const transport = transports.get(sessionId);
@@ -150,11 +190,25 @@ app.post("/sse", async (req, res) => {
       await transport.handlePostMessage(req, res);
       return;
     }
+    return res.status(404).send("Session not found");
   }
 
-  // If no session ID, it might be a verification ping or stateless request attempt.
-  // For now, return 200 OK to pass verification if it's just checking existence.
-  // But strictly, MCP needs SSE to reply.
+  // Case 2: Stateless JSON-RPC (e.g. Open WebUI Init)
+  if (body && body.jsonrpc) {
+    console.log('Detected Stateless JSON-RPC request');
+    const transport = new StatelessHttpTransport(res);
+    await server.connect(transport);
+    await transport.handleMessage(body);
+    // Transport.send() will handle the response.
+    // We should probably close/disconnect after response is likely sent?
+    // Since send() writes res.json(), the response ends there.
+    // We can trigger close.
+    await transport.close();
+    return;
+  }
+
+  // Case 3: Unknown / Ping
+  console.log('Unknown POST /sse request type');
   res.status(200).json({ status: "ok", message: "Use GET /sse to establish connection first" });
 });
 

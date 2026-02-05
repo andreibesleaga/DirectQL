@@ -28,7 +28,7 @@ app.use((req, res, next) => {
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, x-api-key");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, x-api-key, mcp-protocol-version");
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
@@ -395,8 +395,8 @@ app.post("/sse", async (req, res) => {
       await transport.responsePromise;
     } else {
       // It's a notification (no ID), just acknowledge immediately
-      console.log('Acknowledging notification with 204');
-      res.status(204).end();
+      console.log('Acknowledging notification with 200 {}');
+      res.status(200).json({});
     }
 
     // Now it is safe to close

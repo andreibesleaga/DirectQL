@@ -39,82 +39,86 @@ app.get("/health", (req, res) => {
 });
 
 
-// Initialize MCP Server
-const server = new McpServer({
-  name: "Apollo GraphQL MCP",
-  version: "1.0.0"
-});
+// Factory function to create a fresh McpServer instance
+function createMcpServer() {
+  const server = new McpServer({
+    name: "Apollo GraphQL MCP",
+    version: "1.0.0"
+  });
 
-// Tool: Query GraphQL
-server.tool(
-  "query-graphql",
-  "Executes a GraphQL query against the configured API. Use this to fetch data.",
-  { query: { type: "string", description: "The GraphQL query string" } },
-  async ({ query }) => {
-    const endpoint = process.env.APOLLO_MCP_ENDPOINT;
-    const apiKey = process.env.APOLLO_KEY;
-    const isReadOnly = process.env.GRAPHQL_READ_ONLY === 'true';
+  // Tool: Query GraphQL
+  server.tool(
+    "query-graphql",
+    "Executes a GraphQL query against the configured API. Use this to fetch data.",
+    { query: { type: "string", description: "The GraphQL query string" } },
+    async ({ query }) => {
+      const endpoint = process.env.APOLLO_MCP_ENDPOINT;
+      const apiKey = process.env.APOLLO_KEY;
+      const isReadOnly = process.env.GRAPHQL_READ_ONLY === 'true';
 
-    if (!endpoint) {
-      return { content: [{ type: "text", text: "Error: APOLLO_MCP_ENDPOINT not set." }] };
-    }
-
-    try {
-      // Security Check: Validate and Enforce Read-Only
-      const { parse } = await import("graphql");
-      const ast = parse(query);
-
-      if (isReadOnly) {
-        const hasMutation = ast.definitions.some(
-          def => def.kind === 'OperationDefinition' && def.operation === 'mutation'
-        );
-        if (hasMutation) {
-          return { content: [{ type: "text", text: "Error: Mutations are not allowed in Read-Only mode." }] };
-        }
+      if (!endpoint) {
+        return { content: [{ type: "text", text: "Error: APOLLO_MCP_ENDPOINT not set." }] };
       }
 
-      // Determine Auth Headers
-      // GitHub requires: 'Authorization: Bearer <token>' and 'User-Agent'
-      // Default (Apollo/Original): 'x-api-key: <token>'
-      const headers = {
-        "Content-Type": "application/json",
-        "User-Agent": "DirectQL/Apollo-MCP-Agent/1.0"
-      };
+      try {
+        // Security Check: Validate and Enforce Read-Only
+        const { parse } = await import("graphql");
+        const ast = parse(query);
 
-      if (apiKey) {
-        if (endpoint.includes("github.com") || process.env.AUTH_TYPE === "Bearer") {
-          headers["Authorization"] = `Bearer ${apiKey}`;
-        } else {
-          headers["x-api-key"] = apiKey;
+        if (isReadOnly) {
+          const hasMutation = ast.definitions.some(
+            def => def.kind === 'OperationDefinition' && def.operation === 'mutation'
+          );
+          if (hasMutation) {
+            return { content: [{ type: "text", text: "Error: Mutations are not allowed in Read-Only mode." }] };
+          }
         }
+
+        // Determine Auth Headers
+        const headers = {
+          "Content-Type": "application/json",
+          "User-Agent": "DirectQL/Apollo-MCP-Agent/1.0"
+        };
+
+        if (apiKey) {
+          if (endpoint.includes("github.com") || process.env.AUTH_TYPE === "Bearer") {
+            headers["Authorization"] = `Bearer ${apiKey}`;
+          } else {
+            headers["x-api-key"] = apiKey;
+          }
+        }
+
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: headers,
+          body: JSON.stringify({ query })
+        });
+
+        const data = await response.json();
+        return { content: [{ type: "text", text: JSON.stringify(data) }] };
+      } catch (error) {
+        return { content: [{ type: "text", text: `Error fetching GraphQL: ${error.message}` }] };
       }
-
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: headers,
-        body: JSON.stringify({ query })
-      });
-
-      const data = await response.json();
-      return { content: [{ type: "text", text: JSON.stringify(data) }] };
-    } catch (error) {
-      return { content: [{ type: "text", text: `Error fetching GraphQL: ${error.message}` }] };
     }
-  }
-);
+  );
+
+  return server;
+}
 
 // Mount SSE Transport
-// We need to store active transports to handle incoming POST messages
-const transports = new Map();
+// We need to store active transports and servers to handle incoming POST messages
+// Map<sessionId, { transport, server }>
+const sessions = new Map();
 
 app.get("/sse", async (req, res) => {
   const transport = new SSEServerTransport("/messages", res);
   const sessionId = transport.sessionId;
+  const server = createMcpServer();
 
-  transports.set(sessionId, transport);
+  sessions.set(sessionId, { transport, server });
 
   transport.onclose = () => {
-    transports.delete(sessionId);
+    sessions.delete(sessionId);
   };
 
   await server.connect(transport);
@@ -125,14 +129,14 @@ app.use(express.json());
 
 app.post("/messages", async (req, res) => {
   const sessionId = req.query.sessionId;
-  const transport = transports.get(sessionId);
+  const session = sessions.get(sessionId);
 
-  if (!transport) {
+  if (!session) {
     res.status(404).send("Session not found");
     return;
   }
 
-  await transport.handlePostMessage(req, res);
+  await session.transport.handlePostMessage(req, res);
 });
 
 // Stateless Transport for handling direct HTTP POSTs (Open WebUI Hybrid Mode)
@@ -186,9 +190,9 @@ app.post("/sse", async (req, res) => {
   // Case 1: Standard SSE Post-Back (with Session ID)
   if (sessionId) {
     console.log(`Routing POST /sse to transport session: ${sessionId}`);
-    const transport = transports.get(sessionId);
-    if (transport) {
-      await transport.handlePostMessage(req, res);
+    const session = sessions.get(sessionId);
+    if (session) {
+      await session.transport.handlePostMessage(req, res);
       return;
     }
     return res.status(404).send("Session not found");
@@ -198,6 +202,7 @@ app.post("/sse", async (req, res) => {
   if (body && body.jsonrpc) {
     console.log('Detected Stateless JSON-RPC request');
     const transport = new StatelessHttpTransport(res);
+    const server = createMcpServer(); // Create a fresh server instance
     await server.connect(transport);
     await transport.handleMessage(body);
 

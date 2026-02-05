@@ -268,6 +268,10 @@ class StatelessHttpTransport {
     this.onmessage = undefined;
     this.onclose = undefined;
     this.onerror = undefined;
+    // Promise that resolves when the server sends a response
+    this.responsePromise = new Promise((resolve) => {
+      this.resolveResponse = resolve;
+    });
   }
 
   async start() {
@@ -289,6 +293,7 @@ class StatelessHttpTransport {
     } else {
       console.warn("Headers already sent, dropping message:", JSON.stringify(message));
     }
+    this.resolveResponse();
   }
 
   // Called by us to inject the incoming message
@@ -330,8 +335,10 @@ app.post("/sse", async (req, res) => {
     await server.connect(transport);
     await transport.handleMessage(body);
 
-    // Transport.send() will handle the response.
-    // We manually close to ensure cleanup, though for stateless HTTP the res.json() ends it.
+    // Wait for the server to process and send the response
+    await transport.responsePromise;
+
+    // Now it is safe to close
     await transport.close();
     return;
   }

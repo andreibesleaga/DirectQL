@@ -2,7 +2,7 @@
 import assert from 'assert';
 
 
-const BASE_URL = process.env.MCP_SERVER_URL || "http://localhost:3000/sse";
+const BASE_URL = process.env.GRAPHQL_MCP_ENDPOINT || "http://localhost:3000/sse";
 
 async function runTest() {
     console.log(`Starting E2E Simulation against: ${BASE_URL}`);

@@ -3,7 +3,7 @@
 This repository contains a complete **AI agent stack** designed for local development and deployment of an interactive AI chat agent that can access GraphQL APIs and communicate with natural language to make requests and get information from graphql endpoints with particular focus of this version on **GitHub - GraphQL APIs**.
 
 
-- **GraphQL MCP Server, Open WebUI, GitHub GraphQL API, OpenRouter**
+- **GraphQL MCP Server, Open WebUI, GitHub GraphQL API, Ollama, OpenRouter**
 - Use case scenarios: direct user communication and/or agentic AI, for federated graphql introspective schemas endpoints (with optional local schema caching registration).
 
 

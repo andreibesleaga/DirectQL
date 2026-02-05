@@ -69,6 +69,30 @@ This repository contains a complete **AI agent stack** designed for local develo
 
 ---
 
+## Local Development & Helper Scripts
+
+The project includes several helper scripts to verify the stack locally using Docker Compose.
+
+### 1. `test-local-setup.sh`
+**Usage**: `./test-local-setup.sh`
+-   **Purpose**: Automated End-to-End (E2E) Setup & Test.
+-   **Actions**:
+    1.  Cleans up existing Docker containers.
+    2.  Builds and starts the full stack (`graphql-mcp`, `ollama`, `open-webui`).
+    3.  Waits for health checks.
+    4.  Runs an E2E simulation script (`e2e_simulation.js`) against the local stack to verify connectivity and functionality.
+
+### 2. `monitor-stack.sh`
+**Usage**: `./monitor-stack.sh`
+-   **Purpose**: Real-time stack monitoring.
+-   **Actions**:
+    -   Displays running services and ports.
+    -   Shows CPU/Memory usage stats.
+    -   Scans recent logs for errors.
+    -   Streams live logs from all containers.
+
+---
+
 The AI Agent can connect to the MCP Server using the following configuration:
 1. Open your deployed WebUI (`https://webui-xyz.app`)
 2. Go to **Admin Panel** > **Settings** > **Connections**

@@ -1,8 +1,8 @@
 # DirectQL - Interactive GraphQL AI Platform
 
-This repository contains a complete AI Agent stack designed for local development and deployment of a interactive AI chat agent that can access GraphQL APIs and communicate with natural language to make requests and get information from graphql endpoints with particular focus of first version on GitHub GraphQL APIs.
+This repository contains a complete **AI agent stack** designed for local development and deployment of a interactive AI chat agent that can access GraphQL APIs and communicate with natural language to make requests and get information from graphql endpoints with particular focus of this version on **GitHub GraphQL APIs**.
 
-(Examples where it would useful to be used: federated introspective graphql schemas endpoints, with minimal effort, unlike REST APIs).
+(Use case scenario: direct user communication and/or agentic AI, on federated introspective graphql schemas endpoints, with less effort/resources than REST APIs).
 
 Online deployed version: https://directql.up.railway.app (**Open WebUI, GitHub GraphQL API, Apollo Tools MCP Server, OpenRouter**).
 

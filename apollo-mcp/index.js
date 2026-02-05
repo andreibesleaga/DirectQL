@@ -46,21 +46,65 @@ function createMcpServer() {
     version: "1.0.0"
   });
 
+  // Helper: Execute GraphQL Request
+  async function executeGraphQL(query, variables = {}) {
+    const endpoint = process.env.APOLLO_MCP_ENDPOINT;
+    const apiKey = process.env.APOLLO_KEY;
+
+    if (!endpoint) {
+      throw new Error("APOLLO_MCP_ENDPOINT not set");
+    }
+
+    // Determine Auth Headers
+    const headers = {
+      "Content-Type": "application/json",
+      "User-Agent": "DirectQL/Apollo-MCP-Agent/1.0"
+    };
+
+    if (apiKey) {
+      if (endpoint.includes("github.com") || process.env.AUTH_TYPE === "Bearer") {
+        headers["Authorization"] = `Bearer ${apiKey}`;
+      } else {
+        headers["x-api-key"] = apiKey;
+      }
+    }
+
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: headers,
+      body: JSON.stringify({ query, variables })
+    });
+
+    const data = await response.json();
+    return data;
+  }
+
+  // Tool: Introspect Schema
+  server.tool(
+    "introspect-graphql-schema",
+    "Retrieves the full GraphQL schema using standard introspection. Use this to understand available types, queries, and mutations.",
+    {},
+    async () => {
+      try {
+        const { getIntrospectionQuery } = await import("graphql");
+        const query = getIntrospectionQuery();
+        const data = await executeGraphQL(query);
+        return { content: [{ type: "text", text: JSON.stringify(data) }] };
+      } catch (error) {
+        return { content: [{ type: "text", text: `Error introspecting schema: ${error.message}` }] };
+      }
+    }
+  );
+
   // Tool: Query GraphQL
   server.tool(
     "query-graphql",
     "Executes a GraphQL query against the configured API. Use this to fetch data.",
     { query: { type: "string", description: "The GraphQL query string" } },
     async ({ query }) => {
-      const endpoint = process.env.APOLLO_MCP_ENDPOINT;
-      const apiKey = process.env.APOLLO_KEY;
-      const isReadOnly = process.env.GRAPHQL_READ_ONLY === 'true';
-
-      if (!endpoint) {
-        return { content: [{ type: "text", text: "Error: APOLLO_MCP_ENDPOINT not set." }] };
-      }
-
       try {
+        const isReadOnly = process.env.GRAPHQL_READ_ONLY === 'true';
+
         // Security Check: Validate and Enforce Read-Only
         const { parse } = await import("graphql");
         const ast = parse(query);
@@ -74,27 +118,7 @@ function createMcpServer() {
           }
         }
 
-        // Determine Auth Headers
-        const headers = {
-          "Content-Type": "application/json",
-          "User-Agent": "DirectQL/Apollo-MCP-Agent/1.0"
-        };
-
-        if (apiKey) {
-          if (endpoint.includes("github.com") || process.env.AUTH_TYPE === "Bearer") {
-            headers["Authorization"] = `Bearer ${apiKey}`;
-          } else {
-            headers["x-api-key"] = apiKey;
-          }
-        }
-
-        const response = await fetch(endpoint, {
-          method: "POST",
-          headers: headers,
-          body: JSON.stringify({ query })
-        });
-
-        const data = await response.json();
+        const data = await executeGraphQL(query);
         return { content: [{ type: "text", text: JSON.stringify(data) }] };
       } catch (error) {
         return { content: [{ type: "text", text: `Error fetching GraphQL: ${error.message}` }] };

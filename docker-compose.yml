@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  graphql-mcp:
+    build:
+      context: .
+      dockerfile: graphql-mcp/Dockerfile
+    container_name: graphql-mcp
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - GRAPHQL_MCP_ENDPOINT=${GRAPHQL_MCP_ENDPOINT:-https://api.github.com/graphql}
+      - GRAPHQL_API_KEY=${GRAPHQL_API_KEY}
+      - AUTH_TYPE=${AUTH_TYPE:-Bearer}
+      - GRAPHQL_READ_ONLY=${GRAPHQL_READ_ONLY:-true}
+    networks:
+      - directql-net
+
+  ollama:
+    build:
+      context: ./ollama
+      dockerfile: Dockerfile
+    container_name: ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama:/root/.ollama
+    networks:
+      - directql-net
+
+  open-webui:
+    build:
+      context: ./open-webui
+      dockerfile: Dockerfile
+    container_name: open-webui
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OPENAI_API_BASE_URL=http://ollama:11434/v1
+      - OPENAI_API_KEY=ollama
+      # Enable MCP by pointing to the internal service name
+      # Open WebUI typically requires manual configuration via UI, but we ensure it can reach the host
+    volumes:
+      - open-webui:/app/backend/data
+    depends_on:
+      - ollama
+      - graphql-mcp
+    networks:
+      - directql-net
+
+networks:
+  directql-net:
+    driver: bridge
+
+volumes:
+  ollama:
+  open-webui:

@@ -2,6 +2,7 @@ import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mc
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import express from "express";
 import rateLimit from "express-rate-limit";
+import { z } from "zod";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -249,7 +250,9 @@ function createMcpServer() {
   server.tool(
     "query-graphql",
     "Executes a GraphQL query against the configured API. Use this to fetch data.",
-    { query: { type: "string", description: "The GraphQL query string" } },
+    {
+      query: z.string().describe("The GraphQL query string")
+    },
     async ({ query }) => {
       try {
         const isReadOnly = process.env.GRAPHQL_READ_ONLY === 'true';

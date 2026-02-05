@@ -100,3 +100,16 @@ The AI Agent can connect to the MCP Server using the following configuration:
    - **Type**: MCP (SSE), not OpenAPI
    - **URL**: `https://graphql-mcp-xyz.app/sse`
    - **Headers**: `Authorization: Bearer <your-token> / None`
+
+---
+
+## Running examples
+
+### 1. Local setup and monitoring
+!(<temp/Screenshot1.png>)
+
+### 2. Asking questions with MCP enabled on live deployment
+!(<temp/Screenshot2.png>)
+
+### 3. Results received from live GitHub GraphQL API, via MCP, to AI Agent
+!(<temp/Screenshot3.png>)

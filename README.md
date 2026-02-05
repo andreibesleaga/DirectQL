@@ -1,14 +1,14 @@
 # DirectQL - Interactive GraphQL AI Platform with GraphQL MCP Server
 
-This repository contains a complete **AI agent stack** designed for local development and deployment of a interactive AI chat agent that can access GraphQL APIs and communicate with natural language to make requests and get information from graphql endpoints with particular focus of this version on **GitHub GraphQL APIs**.
+This repository contains a complete **AI agent stack** designed for local development and deployment of an interactive AI chat agent that can access GraphQL APIs and communicate with natural language to make requests and get information from graphql endpoints with particular focus of this version on **GitHub - GraphQL APIs**.
 
 
 - **GraphQL MCP Server, Open WebUI, GitHub GraphQL API, OpenRouter**
-- Use case scenario: direct user communication and/or agentic AI, for federated graphql introspective schemas endpoints (with optional local schema caching registration).
+- Use case scenarios: direct user communication and/or agentic AI, for federated graphql introspective schemas endpoints (with optional local schema caching registration).
 
 
 ## Services
-1. **graphql-mcp**: An MCP server that exposes GraphQL APIs as a tool for AI agents.
+1. **graphql-mcp**: MCP server that exposes GraphQL APIs as a service for AI agents.
 2. **open-webui**: The chat interface (ChatGPT clone).
 3. **ollama**: (Optional) A local LLM runner.
 

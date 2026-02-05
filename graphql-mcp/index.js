@@ -343,7 +343,12 @@ class StatelessHttpTransport {
 
   // Called by McpServer when it wants to send a message back to client
   async send(message) {
-    console.log(`[${new Date().toISOString()}] Stateless Response:`, JSON.stringify(message));
+    const msgStr = JSON.stringify(message);
+    if (msgStr.length > 2000) {
+      console.log(`[${new Date().toISOString()}] Stateless Response (Truncated): ${msgStr.substring(0, 200)}... [${msgStr.length} bytes]`);
+    } else {
+      console.log(`[${new Date().toISOString()}] Stateless Response:`, msgStr);
+    }
 
     if (!this.res.headersSent) {
       this.res.json(message);

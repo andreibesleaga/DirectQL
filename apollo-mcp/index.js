@@ -156,17 +156,18 @@ class StatelessHttpTransport {
 
   // Called by McpServer when it wants to send a message back to client
   async send(message) {
-    // For stateless HTTP, we take the first message and send it as the HTTP response.
-    // NOTE: This assumes 1 Request -> 1 Response.
-    // If McpServer sends multiple notifications, this might break or we ignore subsequent ones.
-    // For 'initialize' and 'call_tool', it's usually 1-to-1.
+    console.log(`[${new Date().toISOString()}] Stateless Response:`, JSON.stringify(message));
+
     if (!this.res.headersSent) {
       this.res.json(message);
+    } else {
+      console.warn("Headers already sent, dropping message:", JSON.stringify(message));
     }
   }
 
   // Called by us to inject the incoming message
   async handleMessage(message) {
+    console.log(`[${new Date().toISOString()}] Stateless Request Injection:`, JSON.stringify(message));
     if (this.onmessage) {
       this.onmessage(message);
     }
@@ -199,10 +200,9 @@ app.post("/sse", async (req, res) => {
     const transport = new StatelessHttpTransport(res);
     await server.connect(transport);
     await transport.handleMessage(body);
+
     // Transport.send() will handle the response.
-    // We should probably close/disconnect after response is likely sent?
-    // Since send() writes res.json(), the response ends there.
-    // We can trigger close.
+    // We manually close to ensure cleanup, though for stateless HTTP the res.json() ends it.
     await transport.close();
     return;
   }

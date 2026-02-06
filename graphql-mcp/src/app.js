@@ -7,6 +7,7 @@ import { z } from "zod";
 import { config } from "./config.js";
 import logger from "./logger.js";
 import { getCachedOrFetch } from "./cache.js";
+import { summarize } from "./utils.js";
 
 const app = express();
 
@@ -21,7 +22,7 @@ app.use(limiter);
 
 // Request Logging Middleware
 app.use((req, res, next) => {
-    logger.info("Incoming Request", { method: req.method, url: req.url, headers: req.headers });
+    logger.info("Incoming Request", { method: req.method, url: req.url, headers: summarize(req.headers) });
     next();
 });
 
@@ -114,6 +115,9 @@ app.get("/openapi.json", (req, res) => {
 
 // Helper: GraphQL Executor
 async function executeGraphQL(query, variables = {}) {
+    // Validate Query (Syntax, Security, Structure)
+    validateQuery(query, variables);
+
     const endpoint = config.GRAPHQL_MCP_ENDPOINT;
     const apiKey = config.GRAPHQL_API_KEY;
 
@@ -130,6 +134,8 @@ async function executeGraphQL(query, variables = {}) {
         }
     }
 
+    logger.info("Executing GraphQL Query", { query: summarize(query), variables: summarize(variables) });
+
     const response = await fetch(endpoint, {
         method: "POST",
         headers: headers,
@@ -141,6 +147,7 @@ async function executeGraphQL(query, variables = {}) {
     }
 
     const data = await response.json();
+    logger.info("GraphQL Response", { data: summarize(data?.data ? data.data : data) });
     return data?.data ? data.data : data;
 }
 
@@ -318,11 +325,15 @@ app.post("/sse", async (req, res) => {
                 const toolName = params?.name;
                 const toolArgs = params?.arguments || {};
 
+                logger.info(`Tool Call: ${toolName}`, { args: summarize(toolArgs) });
+
                 if (toolName === "introspect-graphql-schema") {
                     try {
                         const { getIntrospectionQuery } = await import("graphql");
                         const query = getIntrospectionQuery();
                         const data = await executeGraphQL(query);
+                        // Summary of result for logs
+                        logger.info("Tool Result: introspect-graphql-schema", { result: summarize(data) });
                         return sendResult({ content: [{ type: "text", text: JSON.stringify(data) }] });
                     } catch (error) {
                         return sendResult({ content: [{ type: "text", text: `Error: ${error.message}` }] });
@@ -333,17 +344,10 @@ app.post("/sse", async (req, res) => {
                         if (!query) {
                             return sendResult({ content: [{ type: "text", text: "Error: Missing 'query' argument" }] });
                         }
-                        if (config.GRAPHQL_READ_ONLY) {
-                            const { parse } = await import("graphql");
-                            const ast = parse(query);
-                            const hasMutation = ast.definitions.some(
-                                def => def.kind === 'OperationDefinition' && def.operation === 'mutation'
-                            );
-                            if (hasMutation) {
-                                return sendResult({ content: [{ type: "text", text: "Error: Mutations are NOT allowed in Read-only mode." }] });
-                            }
-                        }
+
+                        // Validation happens inside executeGraphQL
                         const data = await executeGraphQL(query);
+                        logger.info("Tool Result: query-graphql", { result: summarize(data) });
                         return sendResult({ content: [{ type: "text", text: JSON.stringify(data) }] });
                     } catch (error) {
                         return sendResult({ content: [{ type: "text", text: `Error: ${error.message}` }] });
@@ -366,6 +370,7 @@ app.post("/sse", async (req, res) => {
 
             case "resources/read":
                 const uri = params?.uri;
+                logger.info(`Resource Read: ${uri}`);
                 if (uri === "graphql://schema") {
                     try {
                         const schemaSDL = await getCachedOrFetch("schema", async () => {

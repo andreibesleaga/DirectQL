@@ -1,14 +1,15 @@
-import { parse, Kind, visit } from 'graphql';
+import { parse, Kind, visit, validate } from 'graphql';
 import { config } from './config.js';
 
 /**
- * Validates a GraphQL query for syntax, security, and structure.
+ * Validates a GraphQL query for syntax, security, structure, and schema compliance.
  * 
  * @param {string} query - The GraphQL query string.
  * @param {object} variables - The variables object.
+ * @param {object} [schema] - The GraphQLSchema object (optional, but recommended).
  * @throws {Error} If validation fails.
  */
-export function validateQuery(query, variables = {}) {
+export function validateQuery(query, variables = {}, schema = null) {
     // 1. Basic Structure Check
     if (!query || typeof query !== 'string') {
         throw new Error("Invalid query: query must be a string.");
@@ -43,6 +44,21 @@ export function validateQuery(query, variables = {}) {
     const depth = calculateDepth(ast);
     if (depth > MAX_DEPTH) {
         throw new Error(`Validation Error: Query depth ${depth} exceeds maximum allowed depth of ${MAX_DEPTH}.`);
+    }
+
+    // 4. Schema Validation
+    if (schema) {
+        const errors = validate(schema, ast);
+        if (errors.length > 0) {
+            const formattedErrors = errors.map(e => `- ${e.message}`).join('\n');
+            throw new Error(
+                `Schema Validation Error:\n${formattedErrors}\n\n` +
+                `How to fix:\n` +
+                `1. Check the 'graphql://schema' resource for correct types and fields.\n` +
+                `2. Ensure you are not querying fields that don't exist on the type.\n` +
+                `3. distinct scalar types vs objects.`
+            );
+        }
     }
 
     return ast; // Return AST if needed, though we primarily validate here.

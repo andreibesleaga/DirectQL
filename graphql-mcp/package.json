@@ -9,14 +9,15 @@
     "test:security": "node test/security.js"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.1",
+    "@modelcontextprotocol/sdk": "^1.26.0",
     "dotenv": "^17.2.3",
+    "eventsource": "^4.1.0",
     "express": "^4.18.2",
     "express-rate-limit": "^8.2.1",
     "graphql": "^16.8.1",
-    "zod": "^4.3.6",
     "node-cache": "^5.1.2",
-    "winston": "^3.19.0"
+    "winston": "^3.19.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "jest": "^30.2.0",

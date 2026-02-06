@@ -131,8 +131,6 @@ sequenceDiagram
 
 The project includes several helper scripts to verify the stack locally using Docker Compose.
 
-> **📖 Full Walkthrough**: See [docs/LOCAL_TESTING.md](docs/LOCAL_TESTING.md) for a complete step-by-step guide to test MCP + Ollama + Open WebUI locally.
-
 ### 1. `./scripts/test-local-setup.sh`
 **Usage**: `./scripts/test-local-setup.sh`
 -   **Purpose**: Automated End-to-End (E2E) Setup & Test.

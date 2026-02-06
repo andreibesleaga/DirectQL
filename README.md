@@ -173,10 +173,11 @@ The project includes several helper scripts to verify the stack locally using Do
 ## Testing
 
 ### MCP Protocol Test Suite
-A comprehensive test suite validates the full MCP protocol implementation (30 tests):
+A comprehensive E2E test suite validates the full MCP protocol implementation (30 tests).  
+**Requires a running stack** (`./scripts/test-local-setup.sh` first):
 
 ```bash
-node graphql-mcp/test/integration/mcp_protocol.test.js
+node graphql-mcp/test/e2e/mcp_protocol.js
 ```
 
 ### Other Tests

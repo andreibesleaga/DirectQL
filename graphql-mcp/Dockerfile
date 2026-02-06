@@ -3,8 +3,8 @@ FROM node:18-alpine
 WORKDIR /app
 
 # Install dependencies first (caching)
-COPY graphql-mcp/package.json ./
-RUN npm install
+COPY graphql-mcp/package*.json ./
+RUN npm ci --only=production
 
 # Copy source code
 COPY graphql-mcp/ .

@@ -14,6 +14,15 @@ This repository contains a complete **AI agent stack** designed for local develo
 
 ## System Architecture
 
+## Key Features
+-   **Production-Ready MCP Server**: `graphql-mcp` with modular architecture.
+-   **Smart Schema Caching**: Implements a 3-tier caching strategy (Memory -> Local Disk -> Remote Fetch) to minimize expensive introspection calls.
+-   **Infrastructure**:
+    -   **Kubernetes**: Sidecar-pattern manifests (`infra/kubernetes`) for scalable deployment.
+    -   **AWS**: Terraform scripts (`infra/terraform`) for serverless ECS Fargate hosting.
+    -   **Railway**: One-click PaaS configuration (`infra/railway`).
+-   **Operational Maturity**: Docker Healthchecks, dependency ordering, and comprehensive integration tests.
+
 ```mermaid
 graph TD
     User[User] -->|Interact| UI[Open WebUI]
@@ -122,8 +131,10 @@ sequenceDiagram
 
 The project includes several helper scripts to verify the stack locally using Docker Compose.
 
-### 1. `test-local-setup.sh`
-**Usage**: `./test-local-setup.sh`
+> **📖 Full Walkthrough**: See [docs/LOCAL_TESTING.md](docs/LOCAL_TESTING.md) for a complete step-by-step guide to test MCP + Ollama + Open WebUI locally.
+
+### 1. `./scripts/test-local-setup.sh`
+**Usage**: `./scripts/test-local-setup.sh`
 -   **Purpose**: Automated End-to-End (E2E) Setup & Test.
 -   **Actions**:
     1.  Cleans up existing Docker containers.
@@ -131,8 +142,25 @@ The project includes several helper scripts to verify the stack locally using Do
     3.  Waits for health checks.
     4.  Runs an E2E simulation script (`e2e_simulation.js`) against the local stack to verify connectivity and functionality.
 
-### 2. `monitor-stack.sh`
-**Usage**: `./monitor-stack.sh`
+> **Note:** This script does NOT download Ollama models automatically. Use `pull-ollama-model.sh` after the stack is running to download models.
+
+### 2. `./scripts/pull-ollama-model.sh`
+**Usage**: `./scripts/pull-ollama-model.sh [model_name]`
+-   **Purpose**: Manual Ollama model download.
+-   **Actions**:
+    1.  Checks if the Ollama container is running.
+    2.  Downloads the specified model (default: `llama3.2:1b`).
+-   **Examples**:
+    ```bash
+    # Download default model
+    ./scripts/pull-ollama-model.sh
+    
+    # Download a specific model
+    ./scripts/pull-ollama-model.sh llama3.2:3b
+    ```
+
+### 3. `./scripts/monitor-stack.sh`
+**Usage**: `./scripts/monitor-stack.sh`
 -   **Purpose**: Real-time stack monitoring.
 -   **Actions**:
     -   Displays running services and ports.
@@ -141,6 +169,24 @@ The project includes several helper scripts to verify the stack locally using Do
     -   Streams live logs from all containers.
 
 ---
+
+## Testing
+
+### MCP Protocol Test Suite
+A comprehensive test suite validates the full MCP protocol implementation (30 tests):
+
+```bash
+node graphql-mcp/test/integration/mcp_protocol.test.js
+```
+
+### Other Tests
+```bash
+# Jest integration tests
+cd graphql-mcp && npm test
+
+# Security tests (read-only mode)
+cd graphql-mcp && npm run test:security
+```
 
 The AI Agent can connect to the MCP Server using the following configuration:
 1. Open your deployed WebUI (`https://webui-xyz.app`)

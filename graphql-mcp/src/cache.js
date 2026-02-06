@@ -47,3 +47,7 @@ export async function getCachedOrFetch(key, fetchFn) {
 export function setCache(key, val) {
     schemaCache.set(key, val);
 }
+
+export function clearCache() {
+    schemaCache.flushAll();
+}

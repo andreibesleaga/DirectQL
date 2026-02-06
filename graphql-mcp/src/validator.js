@@ -24,7 +24,20 @@ export function validateQuery(query, variables = {}, schema = null) {
     try {
         ast = parse(query);
     } catch (error) {
-        throw new Error(`Syntax Error: ${error.message}`);
+        let enhancedMessage = `Syntax Error: ${error.message}`;
+
+        // Add helpful hints for AI agents
+        if (error.message.includes("Unexpected character") || error.message.includes("Invalid character")) {
+            enhancedMessage += `\n\nInterpretation:\nThis indicates a malformed query structure containing an invalid character (often Unicode or hidden symbols).\n\n` +
+                `How to fix:\n` +
+                `1. Remove any non-ASCII characters or hidden symbols.\n` +
+                `2. Verify the query contains only valid GraphQL operators and ASCII characters.\n` +
+                `3. Ensure proper encoding of special characters.`;
+        } else {
+            enhancedMessage += `\n\nHow to fix:\n1. Check for missing braces or parentheses.\n2. Ensure field names are correct.`;
+        }
+
+        throw new Error(enhancedMessage);
     }
 
     // 3. Security Checks

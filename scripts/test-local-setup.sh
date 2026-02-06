@@ -4,6 +4,16 @@ set -e
 echo "🛑 Cleaning up existing containers..."
 docker-compose down --remove-orphans || true
 
+echo "🧪 Running Unit & Integration Tests..."
+# Run local tests first to fail fast
+if [ -d "graphql-mcp" ]; then
+  cd graphql-mcp
+  npm test
+  cd ..
+else 
+  echo "⚠️ graphql-mcp directory not found, skipping tests"
+fi
+
 echo "🏗️ Building and Starting Stack..."
 # Build without cache to ensure latest code, run in background
 docker-compose up -d --build

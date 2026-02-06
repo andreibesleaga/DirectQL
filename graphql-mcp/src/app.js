@@ -8,6 +8,7 @@ import { config } from "./config.js";
 import logger from "./logger.js";
 import { getCachedOrFetch } from "./cache.js";
 import { summarize } from "./utils.js";
+import { validateQuery, sanitizeResponse } from "./validator.js";
 
 const app = express();
 
@@ -167,8 +168,13 @@ async function executeGraphQL(query, variables = {}, skipValidation = false) {
     }
 
     const data = await response.json();
-    logger.info("GraphQL Response", { data: summarize(data?.data ? data.data : data) });
-    return data?.data ? data.data : data;
+    const sanitizedData = sanitizeResponse(data?.data ? data.data : data);
+
+    // Only log if not skipping validation (internal calls) or if desired
+    if (!skipValidation) {
+        logger.info("GraphQL Response", { data: summarize(sanitizedData) });
+    }
+    return sanitizedData;
 }
 
 // MCP Server Factory

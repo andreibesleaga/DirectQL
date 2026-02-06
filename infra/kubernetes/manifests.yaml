@@ -1,0 +1,121 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: directql-service
+spec:
+  selector:
+    app: directql
+  ports:
+    - name: webui
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+    - name: mcp
+      protocol: TCP
+      port: 3000
+      targetPort: 3000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: directql-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: directql
+  template:
+    metadata:
+      labels:
+        app: directql
+    spec:
+      containers:
+        # 1. Start Ollama (Sidecar)
+        - name: ollama
+          image: ollama/ollama:latest
+          ports:
+            - containerPort: 11434
+          volumeMounts:
+            - name: ollama-storage
+              mountPath: /root/.ollama
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "1"
+
+        # 2. Start MCP Server
+        - name: graphql-mcp
+          image: my-registry/graphql-mcp:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: PORT
+              value: "3000"
+            - name: GRAPHQL_MCP_ENDPOINT
+              value: "https://api.github.com/graphql"
+            - name: GRAPHQL_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: directql-secrets
+                  key: graphql-api-key
+          ports:
+            - containerPort: 3000
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+        # 3. Start Open WebUI
+        - name: open-webui
+          image: ghcr.io/open-webui/open-webui:main
+          env:
+            - name: PORT
+              value: "8080"
+            - name: OLLAMA_BASE_URL
+              value: "http://localhost:11434" # Talk to sidecar
+            - name: OPENAI_API_BASE_URL
+              value: "http://localhost:11434/v1"
+            - name: OPENAI_API_KEY
+              value: "ollama"
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: webui-storage
+              mountPath: /app/backend/data
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+
+      volumes:
+        - name: ollama-storage
+          persistentVolumeClaim:
+            claimName: ollama-pvc
+        - name: webui-storage
+          persistentVolumeClaim:
+            claimName: webui-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ollama-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: webui-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi

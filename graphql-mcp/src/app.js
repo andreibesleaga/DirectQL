@@ -38,7 +38,14 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use(express.json());
+// Apply JSON parsing only to routes that need it (exclude /messages for SDK transport)
+app.use((req, res, next) => {
+    if (req.path === '/messages') {
+        next();
+    } else {
+        express.json()(req, res, next);
+    }
+});
 
 // JSON parsing error handler
 app.use((err, req, res, next) => {

@@ -113,10 +113,30 @@ app.get("/openapi.json", (req, res) => {
     });
 });
 
+// Helper: Use a separate cache key for the parsed Schema object
+async function getOrFetchSchema() {
+    return await getCachedOrFetch("parsed_schema", async () => {
+        const { getIntrospectionQuery, buildClientSchema } = await import("graphql");
+        // Use executeGraphQL with skipValidation=true to avoid infinite recursion
+        const query = getIntrospectionQuery();
+        const data = await executeGraphQL(query, {}, true);
+        return buildClientSchema(data);
+    });
+}
+
 // Helper: GraphQL Executor
-async function executeGraphQL(query, variables = {}) {
-    // Validate Query (Syntax, Security, Structure)
-    validateQuery(query, variables);
+async function executeGraphQL(query, variables = {}, skipValidation = false) {
+    if (!skipValidation) {
+        let schema = null;
+        try {
+            schema = await getOrFetchSchema();
+        } catch (e) {
+            logger.warn("Schema fetch failed, proceeding with syntax validation only", { error: e.message });
+        }
+
+        // Validate Query (Syntax, Security, Structure, Schema)
+        validateQuery(query, variables, schema);
+    }
 
     const endpoint = config.GRAPHQL_MCP_ENDPOINT;
     const apiKey = config.GRAPHQL_API_KEY;
@@ -164,13 +184,10 @@ export function createMcpServer() {
         "graphql://schema",
         async (uri) => {
             try {
-                const schemaSDL = await getCachedOrFetch("schema", async () => {
-                    const { getIntrospectionQuery, printSchema, buildClientSchema } = await import("graphql");
-                    const query = getIntrospectionQuery();
-                    const data = await executeGraphQL(query);
-                    const schema = buildClientSchema(data);
-                    return printSchema(schema);
-                });
+                const { printSchema } = await import("graphql");
+                // Use the shared schema fetcher
+                const schema = await getOrFetchSchema();
+                const schemaSDL = printSchema(schema);
 
                 return {
                     contents: [{
@@ -373,11 +390,10 @@ app.post("/sse", async (req, res) => {
                 logger.info(`Resource Read: ${uri}`);
                 if (uri === "graphql://schema") {
                     try {
-                        const schemaSDL = await getCachedOrFetch("schema", async () => {
-                            const { getIntrospectionQuery, printSchema, buildClientSchema } = await import("graphql");
-                            const query = getIntrospectionQuery();
-                            const data = await executeGraphQL(query);
-                            const schema = buildClientSchema(data);
+                        // Reuse the centralized schema fetcher if possible, or keep this efficiently caching SDL
+                        const schemaSDL = await getCachedOrFetch("schema_sdl", async () => {
+                            const { printSchema } = await import("graphql");
+                            const schema = await getOrFetchSchema();
                             return printSchema(schema);
                         });
                         return sendResult({

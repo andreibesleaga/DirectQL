@@ -123,4 +123,91 @@ describe('Validation Middleware', () => {
             }
         });
     });
+
+    describe('Schema Compliance', () => {
+        let schema;
+
+        beforeAll(async () => {
+            const { buildSchema } = await import('graphql');
+            schema = buildSchema(`
+                type Query {
+                    hello: String
+                    user(id: ID!): User
+                }
+                type User {
+                    id: ID!
+                    name: String
+                }
+             `);
+        });
+
+        test('should pass for valid query against schema', () => {
+            const query = '{ hello }';
+            expect(() => validateQuery(query, {}, schema)).not.toThrow();
+        });
+
+        test('should throw error for non-existent field', () => {
+            const query = '{ goodbye }';
+            expect(() => validateQuery(query, {}, schema)).toThrow("Schema Validation Error");
+            expect(() => validateQuery(query, {}, schema)).toThrow("How to fix");
+        });
+
+        test('should throw error for invalid argument', () => {
+            const query = '{ user(id: 123, invalid: true) { name } }';
+            expect(() => validateQuery(query, {}, schema)).toThrow("Schema Validation Error");
+        });
+
+        test('should throw error for missing required argument', () => {
+            const query = '{ user { name } }'; // Missing 'id'
+            expect(() => validateQuery(query, {}, schema)).toThrow("Schema Validation Error");
+            expect(() => validateQuery(query, {}, schema)).toThrow("How to fix");
+        });
+
+        test('should throw error for querying scalar as field', () => {
+            const query = '{ hello { subfield } }'; // hello is String, cannot have selection set
+            expect(() => validateQuery(query, {}, schema)).toThrow("Schema Validation Error");
+        });
+
+        test('should fail validation for unknown type in variables', () => {
+            const query = 'query($curr: Currency) { hello }'; // Currency type doesn't exist
+            // Note: graphql-js validate might not catch this if variable is unused or if it treats unknown input types specifically.
+            // Standard validation usually catches this.
+            // Let's create a query that actually uses it to be sure, or just expect validation error.
+            expect(() => validateQuery(query, {}, schema)).toThrow("Schema Validation Error");
+        });
+
+        test('should pass for valid aliases', () => {
+            const query = '{ myUser: user(id: "1") { name } }';
+            expect(() => validateQuery(query, {}, schema)).not.toThrow();
+        });
+
+        test('should pass for valid fragments', () => {
+            const query = `
+                query { user(id: "1") { ...UserFields } }
+                fragment UserFields on User { name }
+            `;
+            expect(() => validateQuery(query, {}, schema)).not.toThrow();
+        });
+
+        test('should throw error for invalid fragment on type', () => {
+            const query = `
+                query { user(id: "1") { ...InvalidFrag } }
+                fragment InvalidFrag on String { name } 
+            `; // 'String' is scalar, can't have fragment on it usually or strict validation fails? 
+            // In standard GraphQL, fragments on scalars are invalid. 
+            expect(() => validateQuery(query, {}, schema)).toThrow("Schema Validation Error");
+        });
+
+        test('should verify AI recommendation format exists in error', () => {
+            const query = '{ goodbye }';
+            try {
+                validateQuery(query, {}, schema);
+            } catch (e) {
+                expect(e.message).toContain("Schema Validation Error:");
+                expect(e.message).toContain("How to fix:");
+                expect(e.message).toContain("1. Check the 'graphql://schema' resource");
+                expect(e.message).toContain("2. Ensure you are not querying fields");
+            }
+        });
+    });
 });

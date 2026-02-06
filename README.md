@@ -12,6 +12,55 @@ This repository contains a complete **AI agent stack** designed for local develo
 2. **open-webui**: The chat interface (ChatGPT clone).
 3. **ollama**: (Optional) A local LLM runner.
 
+## System Architecture
+
+```mermaid
+graph TD
+    User[User] -->|Interact| UI[Open WebUI]
+    UI -->|LLM Request| Ollama[Ollama / OpenRouter]
+    UI -->|SSE / HTTP| MCP[GraphQL MCP Server]
+    
+    subgraph "DirectQL Stack"
+        UI
+        MCP
+        Ollama
+    end
+
+    MCP -->|Introspection / File I/O| Schema[Local Schemas / Cache]
+    MCP -- "HTTPS (Bearer Token)" --> GitHub[GitHub GraphQL API]
+
+    style User fill:#f9f,stroke:#333,stroke-width:2px
+    style UI fill:#bbf,stroke:#333,stroke-width:2px
+    style MCP fill:#dfd,stroke:#333,stroke-width:2px
+    style GitHub fill:#ddf,stroke:#333,stroke-width:2px
+```
+
+## Workflow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant WebUI as Open WebUI (LLM)
+    participant MCP as GraphQL MCP Server
+    participant GitHub as GitHub API
+
+    User->>WebUI: "Who are the top contributors to this repo?"
+    
+    Note over WebUI, MCP: LLM decides to use MCP Tool
+    
+    WebUI->>MCP: Call Tool: write-graphql-query(request)
+    MCP->>MCP: Check Schema (Introspection/Local)
+    MCP-->>WebUI: Return Valid GraphQL Query
+    
+    WebUI->>MCP: Call Tool: query-graphql(query)
+    MCP->>GitHub: POST /graphql { query }
+    GitHub-->>MCP: JSON Response
+    MCP-->>WebUI: Return Data
+    
+    WebUI->>WebUI: Process Data & Generate Answer
+    WebUI-->>User: "The top contributors are..."
+```
+
 ---
 
 ### Configuration 1: The "Smart & Cheap" (Recommended)

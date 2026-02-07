@@ -33,6 +33,7 @@ graph TD
 
     UI -->|LLM Request| Ollama[Ollama / OpenRouter]
     UI -->|SSE / HTTP| MCP[GraphQL MCP Server]
+    UI -->|SSE / HTTP| DB[MindsDB]
 
     subgraph "DirectQL Stack"
         UI

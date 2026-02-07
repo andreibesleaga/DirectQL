@@ -1,16 +1,17 @@
-## DirectQL - Interactive AI Platform with MCP Server
+## DirectQL - Interactive Data AI Platform
 
-Complete **AI agent stack** designed for local development and deployment, of an interactive AI chat agent, that can access **GraphQL APIs** and communicates with natural language to make queries and retrieve information from endpoints, with focus on **GitHub GraphQL APIs** (and other configurable graphql/openapi endpoints and MCP servers).
+Complete **AI stack** designed for local development, deployment, usage, of an interactive AI chat agent, that can access **GraphQL APIs and federated data sources** and communicates with natural language to make queries and retrieve information from endpoints, with focus on **GitHub GraphQL APIs**, **MindsDB** (configurable GraphQL/OpenAPI endpoints, DBs, MCP servers).
 
 
-- **GraphQL MCP Server, Open WebUI, GitHub GraphQL API, Ollama, OpenRouter**
-- Use case scenarios: **direct user communication and/or agentic AI, for federated graphql introspective schemas and endpoints** (and optional local schema caching registration).
-
+- **GraphQL MCP Server, Open WebUI, GitHub GraphQL API, Ollama, OpenRouter, MindsDB**
+- Use case scenario 1: **direct user communication (and/or agentic AI), for federated graphql introspective schemas and endpoints** (optional local schema caching registration).
+- Use case scenario 2: **direct user communication (and/or agentic AI), for federated data sources (eg: MySQL, PostgreSQL, Snowflake, Redis, csv, etc.)**
 
 ## Services
 1. **graphql-mcp**: MCP server that exposes GraphQL APIs as a service for AI agents.
 2. **open-webui**: The chat interface (ChatGPT clone).
 3. **ollama**: (Optional) A local LLM runner.
+4. **db-mcp**: MindsDB with MCP Server and UI, for data federation and data access via AI.
 
 ## System Architecture
 
@@ -18,6 +19,7 @@ Complete **AI agent stack** designed for local development and deployment, of an
 -   **GraphQL MCP Server**: `graphql-mcp` with modular architecture.
 -   **Smart Schema Caching**: Implements a 3-tier caching strategy (Memory -> Local Disk -> Remote Fetch) to minimize expensive introspection calls.
 -   **OpenAI/OpenWebUI API Compatibility**: OpenWebUI is compatible with OpenAI API, allowing it to be used with any OpenAI-compatible client.
+-   **MindsDB**: MindsDB with MCP Server and local UI, that allows data federation and data access via AI.
 -   **Helper Scripts**: `scripts/test-local-setup.sh`, `scripts/pull-ollama-model.sh`, `scripts/monitor-stack.sh` for local development and testing.
 -   **Infrastructure**: infra scripts for deployments (Kubernetes,AWS,Railway)
 -   **Testing**: automated end-to-end testing.
@@ -27,25 +29,31 @@ Complete **AI agent stack** designed for local development and deployment, of an
 ```mermaid
 graph TD
     User[User] -->|Interact| UI[Open WebUI]
+    User[User] -->|Interact| DB[MindsDB]
+
     UI -->|LLM Request| Ollama[Ollama / OpenRouter]
     UI -->|SSE / HTTP| MCP[GraphQL MCP Server]
-    
+    UI -->|SSE / HTTP| DB[DB MCP Server]
+
     subgraph "DirectQL Stack"
         UI
         MCP
+        DB
         Ollama
     end
 
     MCP -->|Introspection / File I/O| Schema[Local Schemas / Cache]
     MCP -- "HTTPS (Bearer Token)" --> GitHub[GitHub GraphQL API]
+    MCP -- "HTTPS (Bearer Token)" --> DB[Federated Databases]
 
     style User fill:#f9f,stroke:#333,stroke-width:2px
     style UI fill:#bbf,stroke:#333,stroke-width:2px
     style MCP fill:#dfd,stroke:#333,stroke-width:2px
+    style DB fill:#bba,stroke:#333,stroke-width:2px
     style GitHub fill:#ddf,stroke:#333,stroke-width:2px
 ```
 
-## Workflow
+## Workflow 1
 
 ```mermaid
 sequenceDiagram
@@ -69,6 +77,29 @@ sequenceDiagram
     
     WebUI->>WebUI: Process Data & Generate Answer
     WebUI-->>User: "The top contributors are..."
+```
+
+### Workflow 2
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant WebUI as Open WebUI (LLM)
+    participant MindsDB as MindsDB (MCP)
+    participant Sources as Data Sources (SQL/NoSQL/API)
+
+    User->>WebUI: "Analyze user churn from the database"
+    
+    Note over WebUI, MindsDB: LLM selects MindsDB Tool
+    
+    WebUI->>MindsDB: Call Tool: sql_query(SELECT * FROM ...)
+    MindsDB->>MindsDB: Process Federated Query
+    MindsDB->>Sources: Fetch Data (Postgres, Mongo, etc.)
+    Sources-->>MindsDB: Return Data
+    MindsDB-->>WebUI: Return Result Set
+    
+    WebUI->>WebUI: Analyze Data & Generate Answer
+    WebUI-->>User: "The churn rate is 5%..."
 ```
 
 ---
@@ -99,7 +130,7 @@ sequenceDiagram
         -   **Prompts**: Helper for writing queries (`write-graphql-query`).
     -   **Authentication**: Supports Bearer tokens and API Keys (x-api-key) for secure access to GraphQL endpoints (e.g., GitHub, Apollo Studio, etc).
 
-### Configuration
+    **Configuration**
 
     **Environment Variables**
 
@@ -113,6 +144,23 @@ sequenceDiagram
       AUTH_TYPE=Bearer  # or x-api-key or none
       GRAPHQL_READ_ONLY=true # Enforce read-only queries
       ```
+
+
+## MindsDB Integration (db-mcp)
+
+The project includes **MindsDB** running as the `db-mcp` service, enabling you to federate data from multiple sources (PostgreSQL, MySQL, MongoDB, Redis, Snowflake, JIRA, CSV, GitHub, etc.) and query them using standard SQL.
+
+### Access
+- **GUI**: [http://localhost:47334](http://localhost:47334)
+- **MCP Endpoint**: `http://localhost:47334/mcp/sse`
+
+### connecting Data Sources
+You can connect various data sources in the MindsDB GUI or API.
+
+For configuration examples and usage instructions, please refer to [mcp/db-mcp/README.md](mcp/db-mcp/README.md).
+
+*Optionally you can also add in the GUI the local ollama latest model for interacting with the DBs from the UI.*
+
 ---
 
 ### Configuration 2: The "Fully Local"
@@ -221,6 +269,8 @@ The AI Agent can connect to the MCP Server using the following configuration:
    - **URL**: `https://graphql-mcp-xyz.app/sse`
    - **Headers**: `Authorization: Bearer <your-token> / None`
 
+*Optionally you can also add in the GUI the local ollama latest model for interacting with it from the UI.*
+
 ---
 
 ## Running examples
@@ -233,3 +283,8 @@ The AI Agent can connect to the MCP Server using the following configuration:
 
 ### 3. Results received from live GitHub GraphQL API, via MCP, to AI Agent
 ![Screenshot3.png](<temp/Screenshot3.png>)
+
+### 4. MindsDB Interface
+![Screenshot4.png](<temp/Screenshot4.png>)
+
+---

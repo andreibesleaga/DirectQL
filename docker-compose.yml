@@ -42,6 +42,8 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [gpu]
+    environment:
+      - OLLAMA_NUM_CTX=16384
 
   open-webui:
     build:
@@ -74,6 +76,27 @@ services:
     networks:
       - directql-net
 
+  db-mcp:
+    build:
+      context: mcp/db-mcp
+      dockerfile: Dockerfile
+    container_name: db-mcp
+    ports:
+      - "${MINDSDB_PORT_HTTP:-47334}:47334" # HTTP / MCP / Web UI
+      - "${MINDSDB_PORT_MYSQL:-47335}:47335" # MySQL Compatibility Port
+    environment:
+      - MINDSDB_APIS=${MINDSDB_APIS:-http,mysql,mcp}
+    volumes:
+      - mindsdb_data:/root/mdb_storage
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:47334/api/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - directql-net
+
+
 networks:
   directql-net:
     driver: bridge
@@ -81,3 +104,4 @@ networks:
 volumes:
   ollama:
   open-webui:
+  mindsdb_data:

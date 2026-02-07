@@ -1,0 +1,1 @@
+FROM mindsdb/mindsdb:latest

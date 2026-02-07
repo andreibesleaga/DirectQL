@@ -1,4 +1,14 @@
 #!/bin/bash
+# Check if ollama is installed and display models if it is already running
+if ! command -v ollama &> /dev/null; then
+    echo "❌ Error: 'ollama' command not found."
+    echo "   This script is intended to run inside the docker container."
+    echo "   If you want to run it locally, please install Ollama first: https://ollama.com/"
+    echo ""
+    curl http://localhost:11434/api/tags
+    exit 1
+fi
+
 # Start Ollama in background
 ollama serve &
 

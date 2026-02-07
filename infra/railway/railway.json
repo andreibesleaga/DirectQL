@@ -92,10 +92,6 @@
                     "description": "Enabled MindsDB APIs (http,mysql)",
                     "defaultValue": "http,mysql"
                 },
-                "MINDSDB_PORT_HTTP": {
-                    "description": "HTTP/Web UI Port",
-                    "defaultValue": "47334"
-                },
                 "MINDSDB_PORT_MYSQL": {
                     "description": "MySQL Port",
                     "defaultValue": "47335"

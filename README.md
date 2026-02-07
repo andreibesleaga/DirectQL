@@ -4,8 +4,8 @@ Complete **AI stack** designed for local development, deployment, usage, of an i
 
 
 - **GraphQL MCP Server, Open WebUI, GitHub GraphQL API, Ollama, OpenRouter, MindsDB**
-- Use case scenario 1: **direct user communication in natural language (and/or agentic AI), for federated graphql introspective schemas and endpoints** (optional local schema caching registration).
-- Use case scenario 2: **direct user communication in natural language (and/or agentic AI), for federated data sources (eg: MySQL, PostgreSQL, Snowflake, Redis, csv, etc.)**
+- Use case scenario 1: **direct user communication in natural language (and/or agentic AI) with federated graphql introspective schemas and endpoints** (optional local schema caching registration).
+- Use case scenario 2: **direct user communication in natural language (and/or agentic AI) with federated data sources (eg: MySQL, PostgreSQL, Snowflake, Redis, csv, etc.)**
 
 ## Services
 1. **graphql-mcp**: MCP server that exposes GraphQL APIs as a service for AI agents.

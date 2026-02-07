@@ -11,7 +11,7 @@ Complete **AI stack** designed for local development, deployment, usage, of an i
 1. **graphql-mcp**: MCP server that exposes GraphQL APIs as a service for AI agents.
 2. **open-webui**: The chat interface (ChatGPT clone).
 3. **ollama**: (Optional) A local LLM runner.
-4. **db-mcp**: MindsDB with MCP Server and UI, for data federation and data access via AI.
+4. **db-mcp**: MindsDB for data federation and data access via AI.
 
 ## System Architecture
 
@@ -19,7 +19,7 @@ Complete **AI stack** designed for local development, deployment, usage, of an i
 -   **GraphQL MCP Server**: `graphql-mcp` with modular architecture.
 -   **Smart Schema Caching**: Implements a 3-tier caching strategy (Memory -> Local Disk -> Remote Fetch) to minimize expensive introspection calls.
 -   **OpenAI/OpenWebUI API Compatibility**: OpenWebUI is compatible with OpenAI API, allowing it to be used with any OpenAI-compatible client.
--   **MindsDB**: MindsDB with MCP Server and local UI, that allows data federation and data access via AI.
+-   **MindsDB**: MindsDB with UI, that allows data federation and data access via AI.
 -   **Helper Scripts**: `scripts/test-local-setup.sh`, `scripts/pull-ollama-model.sh`, `scripts/monitor-stack.sh` for local development and testing.
 -   **Infrastructure**: infra scripts for deployments (Kubernetes,AWS,Railway)
 -   **Testing**: automated end-to-end testing.
@@ -33,7 +33,6 @@ graph TD
 
     UI -->|LLM Request| Ollama[Ollama / OpenRouter]
     UI -->|SSE / HTTP| MCP[GraphQL MCP Server]
-    UI -->|SSE / HTTP| DB[DB MCP Server]
 
     subgraph "DirectQL Stack"
         UI
@@ -44,7 +43,6 @@ graph TD
 
     MCP -->|Introspection / File I/O| Schema[Local Schemas / Cache]
     MCP -- "HTTPS (Bearer Token)" --> GitHub[GitHub GraphQL API]
-    MCP -- "HTTPS (Bearer Token)" --> DB[Federated Databases]
 
     style User fill:#f9f,stroke:#333,stroke-width:2px
     style UI fill:#bbf,stroke:#333,stroke-width:2px
@@ -77,29 +75,6 @@ sequenceDiagram
     
     WebUI->>WebUI: Process Data & Generate Answer
     WebUI-->>User: "The top contributors are..."
-```
-
-### Workflow 2
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant WebUI as Open WebUI (LLM)
-    participant MindsDB as MindsDB (MCP)
-    participant Sources as Data Sources (SQL/NoSQL/API)
-
-    User->>WebUI: "Analyze user churn from the database"
-    
-    Note over WebUI, MindsDB: LLM selects MindsDB Tool
-    
-    WebUI->>MindsDB: Call Tool: sql_query(SELECT * FROM ...)
-    MindsDB->>MindsDB: Process Federated Query
-    MindsDB->>Sources: Fetch Data (Postgres, Mongo, etc.)
-    Sources-->>MindsDB: Return Data
-    MindsDB-->>WebUI: Return Result Set
-    
-    WebUI->>WebUI: Analyze Data & Generate Answer
-    WebUI-->>User: "The churn rate is 5%..."
 ```
 
 ---
@@ -159,7 +134,7 @@ You can connect various data sources in the MindsDB GUI or API.
 
 For configuration examples and usage instructions, please refer to [mcp/db-mcp/README.md](mcp/db-mcp/README.md).
 
-*Optionally you can also add in the GUI the local ollama latest model for interacting with the DBs from the UI.*
+*Optionally you can also add in the GUI the local ollama latest model for interacting with the DBs from the UI and optionally will have an option to be added as MCP to OpenWebUI DirectQL main UI.*
 
 ---
 

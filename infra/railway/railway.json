@@ -74,6 +74,33 @@
                     "defaultValue": "true"
                 }
             }
+        },
+        {
+            "serviceName": "MindsDB MCP",
+            "description": "MindsDB Service for data federation and SQL AI agent capabilities.",
+            "rootDirectory": "mcp/db-mcp",
+            "build": {
+                "builder": "DOCKERFILE",
+                "dockerfilePath": "Dockerfile"
+            },
+            "deploy": {
+                "restartPolicyType": "ON_FAILURE",
+                "numReplicas": 1
+            },
+            "variables": {
+                "MINDSDB_APIS": {
+                    "description": "Enabled MindsDB APIs (http,mysql)",
+                    "defaultValue": "http,mysql"
+                },
+                "MINDSDB_PORT_HTTP": {
+                    "description": "HTTP/Web UI Port",
+                    "defaultValue": "47334"
+                },
+                "MINDSDB_PORT_MYSQL": {
+                    "description": "MySQL Port",
+                    "defaultValue": "47335"
+                }
+            }
         }
     ]
 }

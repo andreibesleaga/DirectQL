@@ -34,12 +34,33 @@ until curl -s http://localhost:3000/health | grep "ok" > /dev/null; do
 done
 echo " ✅ GraphQL MCP is UP"
 
+echo "   Waiting for MindsDB (db-mcp) on port 47334..."
+COUNT=0
+until curl -s http://localhost:47334/api/status | grep "ok" > /dev/null; do
+  sleep 1
+  COUNT=$((COUNT+1))
+  if [ $COUNT -ge $MAX_RETRIES ]; then
+    echo "❌ Timeout waiting for MindsDB"
+    exit 1
+  fi
+  echo -n "."
+done
+echo " ✅ MindsDB is UP"
+
 # Optional: Wait for others
 echo "   Checking Open WebUI container status..."
 if [ "$(docker inspect -f '{{.State.Running}}' open-webui)" = "true" ]; then
     echo " ✅ Open WebUI is RUNNING"
 else
     echo " ❌ Open WebUI failed to start"
+    exit 1
+fi
+
+echo "   Checking MindsDB container status..."
+if [ "$(docker inspect -f '{{.State.Running}}' db-mcp)" = "true" ]; then
+    echo " ✅ MindsDB is RUNNING"
+else
+    echo " ❌ MindsDB failed to start"
     exit 1
 fi
 
@@ -58,4 +79,5 @@ node mcp/graphql-mcp/test/e2e_simulation.js
 echo "🎉 Success! Local Stack is running."
 echo "   - Open WebUI: http://localhost:8080"
 echo "   - GraphQL MCP: http://localhost:3000/sse"
+echo "   - MindsDB UI: http://localhost:47334"
 echo "   - OpenAPI Spec: http://localhost:3000/openapi.json"

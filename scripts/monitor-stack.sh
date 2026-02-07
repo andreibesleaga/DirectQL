@@ -39,6 +39,10 @@ echo ">> Ollama Errors:"
 docker-compose logs --tail=20 ollama | grep -iE "error|fail|exception" | tail -n 5 || echo "   (No recent errors found)"
 
 echo ""
+echo ">> MindsDB Errors:"
+docker-compose logs --tail=20 db-mcp | grep -iE "error|fail|exception" | tail -n 5 || echo "   (No recent errors found)"
+
+echo ""
 echo "========================================================"
 echo "📝 LATEST LOG SNAPSHOT (Last 3 lines per service)"
 echo "========================================================"

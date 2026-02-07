@@ -14,6 +14,14 @@ spec:
       protocol: TCP
       port: 3000
       targetPort: 3000
+    - name: mindsdb-http
+      protocol: TCP
+      port: 47334
+      targetPort: 47334
+    - name: mindsdb-mysql
+      protocol: TCP
+      port: 47335
+      targetPort: 47335
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -90,6 +98,31 @@ spec:
             initialDelaySeconds: 30
             periodSeconds: 10
 
+        # 4. Start MindsDB (db-mcp)
+        - name: db-mcp
+          image: mindsdb/mindsdb:latest
+          env:
+            - name: MINDSDB_APIS
+              value: "http,mysql"
+            - name: MINDSDB_PORT_HTTP
+              value: "47334"
+            - name: MINDSDB_PORT_MYSQL
+              value: "47335"
+          ports:
+            - containerPort: 47334
+            - containerPort: 47335
+          volumeMounts:
+            - name: mindsdb-storage
+              mountPath: /root/mdb_storage
+          readinessProbe:
+            exec:
+              command:
+              - curl
+              - -f
+              - http://localhost:47334/api/status
+            initialDelaySeconds: 20
+            periodSeconds: 10
+
       volumes:
         - name: ollama-storage
           persistentVolumeClaim:
@@ -97,6 +130,9 @@ spec:
         - name: webui-storage
           persistentVolumeClaim:
             claimName: webui-pvc
+        - name: mindsdb-storage
+          persistentVolumeClaim:
+            claimName: mindsdb-pvc
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -113,6 +149,17 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: webui-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mindsdb-pvc
 spec:
   accessModes:
     - ReadWriteOnce

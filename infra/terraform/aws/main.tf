@@ -83,6 +83,22 @@ resource "aws_ecs_task_definition" "app" {
       memory    = 2048
       essential = true
       portMappings = [{ containerPort = 11434 }]
+    },
+    {
+      name      = "db-mcp"
+      image     = "mindsdb/mindsdb:latest"
+      cpu       = 512
+      memory    = 2048
+      essential = true
+      portMappings = [
+        { containerPort = 47334 },
+        { containerPort = 47335 }
+      ]
+      environment = [
+        { name = "MINDSDB_APIS", value = "http,mysql" },
+        { name = "MINDSDB_PORT_HTTP", value = "47334" },
+        { name = "MINDSDB_PORT_MYSQL", value = "47335" }
+      ]
     }
   ])
 }

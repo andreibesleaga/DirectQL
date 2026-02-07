@@ -8,6 +8,7 @@ This directory contains resources for deploying the DirectQL stack to various en
 A single-file manifest defining a Pod with 3 containers (Sidecar pattern):
 - **Ollama**: Local LLM runner.
 - **GraphQL-MCP**: The MCP server.
+- **MindsDB (db-mcp)**: Data federation and SQL AI agent service.
 - **Open-WebUI**: The user interface.
 
 **Deploy**:
@@ -67,6 +68,8 @@ This file defines the services for a Railway One-Click deploy or monorepo setup.
   - Variables: `GRAPHQL_MCP_ENDPOINT`, `GRAPHQL_API_KEY`, etc.
 - **DirectQL (Open WebUI)**: Deployed from `open-webui/` directory.
   - Variables: `OPENAI_API_BASE_URL` (defaults to OpenRouter), `OPENAI_API_KEY`.
+- **MindsDB MCP**: Deployed from `mcp/db-mcp/` directory.
+  - Variables: `MINDSDB_APIS` (http,mysql), `MINDSDB_PORT_HTTP`, `MINDSDB_PORT_MYSQL`.
 
 **Deploy**:
 1.  Push this repo to GitHub.

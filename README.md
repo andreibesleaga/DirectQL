@@ -1,10 +1,10 @@
-## DirectQL - Interactive AI Platform with GraphQL MCP Server
+## DirectQL - Interactive AI Platform with MCP Server
 
-This repository contains a complete **AI agent stack** designed for local development and deployment, of an interactive AI chat agent, that can access GraphQL APIs and allows communication with natural language to make requests and get information from graphql endpoints, with particular focus of this version on **GitHub - GraphQL APIs**.
+Complete **AI agent stack** designed for local development and deployment, of an interactive AI chat agent, that can access **GraphQL APIs** and communicates with natural language to make queries and retrieve information from endpoints, with focus on **GitHub GraphQL APIs** (and other configurable graphql/openapi endpoints and MCP servers).
 
 
 - **GraphQL MCP Server, Open WebUI, GitHub GraphQL API, Ollama, OpenRouter**
-- Use case scenarios: **direct user communication and/or agentic AI, for federated graphql introspective schemas endpoints** (and optional local schema caching registration).
+- Use case scenarios: **direct user communication and/or agentic AI, for federated graphql introspective schemas and endpoints** (and optional local schema caching registration).
 
 
 ## Services
@@ -15,13 +15,14 @@ This repository contains a complete **AI agent stack** designed for local develo
 ## System Architecture
 
 ## Key Features
--   **Production-Ready MCP Server**: `graphql-mcp` with modular architecture.
+-   **GraphQL MCP Server**: `graphql-mcp` with modular architecture.
 -   **Smart Schema Caching**: Implements a 3-tier caching strategy (Memory -> Local Disk -> Remote Fetch) to minimize expensive introspection calls.
--   **Infrastructure**:
-    -   **Kubernetes**: Sidecar-pattern manifests (`infra/kubernetes`) for scalable deployment.
-    -   **AWS**: Terraform scripts (`infra/terraform`) for serverless ECS Fargate hosting.
-    -   **Railway**: One-click PaaS configuration (`infra/railway`).
--   **Operational Maturity**: Docker Healthchecks, dependency ordering, and comprehensive integration tests.
+-   **OpenAI/OpenWebUI API Compatibility**: OpenWebUI is compatible with OpenAI API, allowing it to be used with any OpenAI-compatible client.
+-   **Helper Scripts**: `scripts/test-local-setup.sh`, `scripts/pull-ollama-model.sh`, `scripts/monitor-stack.sh` for local development and testing.
+-   **Infrastructure**: infra scripts for deployments (Kubernetes,AWS,Railway)
+-   **Testing**: automated end-to-end testing.
+-   **Documentation**: Comprehensive documentation for setup, configuration, and usage.
+
 
 ```mermaid
 graph TD
@@ -72,10 +73,10 @@ sequenceDiagram
 
 ---
 
-### Configuration 1: The "Smart & Cheap" (Recommended)
+### Configuration 1: The "Smart & Cheap"
 *Uses OpenRouter (DeepSeek/Gemini/GPT) & Tools.*
 
-## Components
+### Components
 
 1.  **DirectQL Client (Open WebUI)**
     -   The user interface for interacting with the AI.
@@ -90,7 +91,7 @@ sequenceDiagram
       - `WEBUI_SECRET_KEY`: `(random string)`
       - `GRAPHQL_READ_ONLY`: `true`
 
-2.  **GraphQL MCP Server** (`graphql-mcp/`)
+2.  **GraphQL MCP Server** (`mcp/graphql-mcp/`)
     -   A Model Context Protocol (MCP) server that adapts GraphQL APIs for LLMs.
     -   **Features**:
         -   **Tools**: Execute queries (`query-graphql`) and introspect schemas (`introspect-graphql-schema`).
@@ -100,7 +101,8 @@ sequenceDiagram
 
 ### Configuration
 
-  ### Environment Variables
+    **Environment Variables**
+
       Create a `.env` file in the root:
 
       ```env
@@ -116,14 +118,14 @@ sequenceDiagram
 ### Configuration 2: The "Fully Local"
 *Uses Ollama running llama3.2:1b*
 
-**Service: ollama**
-- `ROOT DIRECTORY`: `/ollama`
-- Volume mount: `/root/.ollama`
+    **Service: ollama**
+    - `ROOT DIRECTORY`: `/ollama`
+    - Volume mount: `/root/.ollama`
 
-**Service: open-webui**
-- Variables:
-  - `OLLAMA_BASE_URL`: `http://ollama-production:11434` (Replace with actual service name)
-  - `ENABLE_OPENAI_API`: `false`
+    **Service: open-webui**
+    - Variables:
+    - `OLLAMA_BASE_URL`: `http://ollama-production:11434` (Replace with actual service name)
+    - `ENABLE_OPENAI_API`: `false`
 
 ---
 
@@ -131,7 +133,7 @@ sequenceDiagram
 
 The project includes several helper scripts to verify the stack locally using Docker Compose.
 
-### 1. `./scripts/test-local-setup.sh`
+#### 1. `./scripts/test-local-setup.sh`
 **Usage**: `./scripts/test-local-setup.sh`
 -   **Purpose**: Automated End-to-End (E2E) Setup & Test.
 -   **Actions**:
@@ -142,7 +144,7 @@ The project includes several helper scripts to verify the stack locally using Do
 
 > **Note:** This script does NOT download Ollama models automatically. Use `pull-ollama-model.sh` after the stack is running to download models.
 
-### 2. `./scripts/pull-ollama-model.sh`
+#### 2. `./scripts/pull-ollama-model.sh`
 **Usage**: `./scripts/pull-ollama-model.sh [model_name]`
 -   **Purpose**: Manual Ollama model download.
 -   **Actions**:
@@ -157,7 +159,7 @@ The project includes several helper scripts to verify the stack locally using Do
     ./scripts/pull-ollama-model.sh llama3.2:3b
     ```
 
-### 3. `./scripts/monitor-stack.sh`
+#### 3. `./scripts/monitor-stack.sh`
 **Usage**: `./scripts/monitor-stack.sh`
 -   **Purpose**: Real-time stack monitoring.
 -   **Actions**:
@@ -165,6 +167,30 @@ The project includes several helper scripts to verify the stack locally using Do
     -   Shows CPU/Memory usage stats.
     -   Scans recent logs for errors.
     -   Streams live logs from all containers.
+
+### 4. `./mcp/graphql-mcp/cli.js`
+**Usage**: `node mcp/graphql-mcp/cli.js`
+-   **Purpose**: GraphQL MCP Server CLI - for proxying MCP to AI assistant.
+-   **Configuration**: edit your AI assistant's configuration file to run the MCP server:
+```
+{
+    "mcpServers": {
+        "DirectQL": {
+            "command": "node",
+            "args": [
+                "/DirectQL/graphql-mcp/cli.js"
+            ],
+            "cwd": "/DirectQL/graphql-mcp",
+            "env": {
+                "GRAPHQL_READ_ONLY": "true",
+                "GRAPHQL_API_KEY": "your_github_token",
+                "GRAPHQL_ENDPOINT": "https://api.github.com/graphql",
+                "AUTH_TYPE": "Bearer"                
+            }
+        }
+    }
+}
+```
 
 ---
 
@@ -175,16 +201,16 @@ A comprehensive E2E test suite validates the full MCP protocol implementation (3
 **Requires a running stack** (`./scripts/test-local-setup.sh` first):
 
 ```bash
-node graphql-mcp/test/e2e/mcp_protocol.js
+node mcp/graphql-mcp/test/e2e/mcp_protocol.js
 ```
 
 ### Other Tests
 ```bash
 # Jest integration tests
-cd graphql-mcp && npm test
+cd mcp/graphql-mcp && npm test
 
 # Security tests (read-only mode)
-cd graphql-mcp && npm run test:security
+cd mcp/graphql-mcp && npm run test:security
 ```
 
 The AI Agent can connect to the MCP Server using the following configuration:

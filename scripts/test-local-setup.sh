@@ -6,12 +6,12 @@ docker-compose down --remove-orphans || true
 
 echo "🧪 Running Unit & Integration Tests..."
 # Run local tests first to fail fast
-if [ -d "graphql-mcp" ]; then
-  cd graphql-mcp
+if [ -d "mcp/graphql-mcp" ]; then
+  cd mcp/graphql-mcp
   npm test
-  cd ..
+  cd ../..
 else 
-  echo "⚠️ graphql-mcp directory not found, skipping tests"
+  echo "⚠️ mcp/graphql-mcp directory not found, skipping tests"
 fi
 
 echo "🏗️ Building and Starting Stack..."
@@ -53,7 +53,7 @@ if [ -f .env ]; then
 fi
 
 # Run the test
-node graphql-mcp/test/e2e_simulation.js
+node mcp/graphql-mcp/test/e2e_simulation.js
 
 echo "🎉 Success! Local Stack is running."
 echo "   - Open WebUI: http://localhost:8080"

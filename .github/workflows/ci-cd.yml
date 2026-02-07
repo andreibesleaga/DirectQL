@@ -19,10 +19,10 @@ jobs:
         
     - name: Install Dependencies
       run: |
-        cd graphql-mcp
+        cd mcp/graphql-mcp
         npm ci
         
     - name: Run Security Tests
       run: |
-        cd graphql-mcp
+        cd mcp/graphql-mcp
         npm test

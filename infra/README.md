@@ -63,7 +63,7 @@ terraform apply
 This file defines the services for a Railway One-Click deploy or monorepo setup.
 
 **Configuration**:
-- **GraphQL MCP**: Deployed from `graphql-mcp/` directory using the Dockerfile.
+- **GraphQL MCP**: Deployed from `mcp/graphql-mcp/` directory using the Dockerfile.
   - Variables: `GRAPHQL_MCP_ENDPOINT`, `GRAPHQL_API_KEY`, etc.
 - **DirectQL (Open WebUI)**: Deployed from `open-webui/` directory.
   - Variables: `OPENAI_API_BASE_URL` (defaults to OpenRouter), `OPENAI_API_KEY`.

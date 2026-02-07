@@ -4,11 +4,11 @@
         {
             "serviceName": "GraphQL MCP",
             "description": "GraphQL MCP Server that exposes GraphQL APIs as tools for AI agents.",
-            "rootDirectory": "graphql-mcp",
+            "rootDirectory": "mcp/graphql-mcp",
             "buildCommand": "npm install",
             "startCommand": "npm start",
             "watchPatterns": [
-                "graphql-mcp/**/*"
+                "mcp/graphql-mcp/**/*"
             ],
             "build": {
                 "builder": "DOCKERFILE",

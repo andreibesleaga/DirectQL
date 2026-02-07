@@ -4,7 +4,7 @@ services:
   graphql-mcp:
     build:
       context: .
-      dockerfile: graphql-mcp/Dockerfile
+      dockerfile: mcp/graphql-mcp/Dockerfile
     container_name: graphql-mcp
     restart: unless-stopped
     ports:

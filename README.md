@@ -44,6 +44,12 @@ graph TD
 
     MCP -->|Introspection / File I/O| Schema[Local Schemas / Cache]
     MCP -- "HTTPS (Bearer Token)" --> GitHub[GitHub GraphQL API]
+    DB -->|SQL / API| MySQL[MySQL]
+    DB -->|SQL / API| PostgreSQL[PostgreSQL]
+    DB -->|SQL / API| Snowflake[Snowflake]
+    DB -->|SQL / API| Redis[Redis]
+    DB -->|SQL / API| CSV[CSV]
+    DB -->|SQL / API| GitHub[GitHub]
 
     style User fill:#f9f,stroke:#333,stroke-width:2px
     style UI fill:#bbf,stroke:#333,stroke-width:2px

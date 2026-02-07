@@ -1,18 +1,11 @@
 # MindsDB Integration (db-mcp)
 
-This service runs **MindsDB**, allowing you to federate data from multiple sources and query them via SQL or the MCP protocol.
+This service runs **MindsDB**, allowing you to federate data from multiple sources and query them via SQL (or MCP protocol).
 
 ## Access
 - **GUI**: [http://localhost:47334](http://localhost:47334)
 - **MCP Endpoint**: `http://localhost:47334/mcp/sse`
 - **MySQL Port**: 47335
-10: 
-11: ## Deployment
-12: 
-13: ### Railway / Cloud
-14: This service includes a startup script that automatically detects the `PORT` environment variable provided by platforms like Railway.
-15: - If `PORT` is set, MindsDB will listen on that port.
-16: - If `PORT` is not set, it defaults to `47334`.
 
 ## Configuration Examples
 

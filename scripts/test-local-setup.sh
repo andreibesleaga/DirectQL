@@ -36,10 +36,11 @@ echo " ✅ GraphQL MCP is UP"
 
 echo "   Waiting for MindsDB (db-mcp) on port 47334..."
 COUNT=0
+MAX_RETRIES_MDB=60
 until curl -s http://localhost:47334/api/status | grep "ok" > /dev/null; do
   sleep 1
   COUNT=$((COUNT+1))
-  if [ $COUNT -ge $MAX_RETRIES ]; then
+  if [ $COUNT -ge $MAX_RETRIES_MDB ]; then
     echo "❌ Timeout waiting for MindsDB"
     exit 1
   fi

@@ -35,6 +35,13 @@ services:
       - ollama:/root/.ollama
     networks:
       - directql-net
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
 
   open-webui:
     build:

@@ -254,19 +254,3 @@ The AI Agent can connect to the MCP Server using the following configuration:
 *Optionally you can also add in the GUI the local ollama latest model for interacting with it from the UI.*
 
 ---
-
-## Running examples
-
-### 1. Local setup and monitoring
-![Screenshot1.png](<temp/Screenshot1.png>)
-
-### 2. Asking questions with MCP enabled on live deployment
-![Screenshot2.png](<temp/Screenshot2.png>)
-
-### 3. Results received from live GitHub GraphQL API, via MCP, to AI Agent
-![Screenshot3.png](<temp/Screenshot3.png>)
-
-### 4. MindsDB Interface
-![Screenshot4.png](<temp/Screenshot4.png>)
-
----

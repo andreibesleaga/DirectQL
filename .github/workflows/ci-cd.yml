@@ -6,23 +6,33 @@ on:
   pull_request:
     branches: [ "main" ]
 
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mcp/graphql-mcp
+    strategy:
+      matrix:
+        node-version: [ '20', '22' ]
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Use Node.js
-      uses: actions/setup-node@v3
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
       with:
-        node-version: '18.x'
-        
-    - name: Install Dependencies
-      run: |
-        cd mcp/graphql-mcp
-        npm ci
-        
-    - name: Run Security Tests
-      run: |
-        cd mcp/graphql-mcp
-        npm test
+        node-version: ${{ matrix.node-version }}
+        cache: npm
+        cache-dependency-path: mcp/graphql-mcp/package-lock.json
+
+    - name: Install dependencies (clean, from lockfile)
+      run: npm ci
+
+    - name: Run unit & integration tests (Jest)
+      run: npm test
+
+    - name: Run read-only security test
+      run: npm run test:security

@@ -52,11 +52,20 @@ export function validateQuery(query, variables = {}, schema = null) {
         }
     }
 
-    // Depth Limit Check
-    const MAX_DEPTH = 15; // Hardcoded safe limit
+    // Depth Limit Check (configurable; default 15 preserves the previous hardcoded limit)
+    const maxDepth = config.GRAPHQL_MAX_DEPTH;
     const depth = calculateDepth(ast);
-    if (depth > MAX_DEPTH) {
-        throw new Error(`Validation Error: Query depth ${depth} exceeds maximum allowed depth of ${MAX_DEPTH}.`);
+    if (depth > maxDepth) {
+        throw new Error(`Validation Error: Query depth ${depth} exceeds maximum allowed depth of ${maxDepth}.`);
+    }
+
+    // Complexity Limit Check (opt-in: only enforced when GRAPHQL_COMPLEXITY_LIMIT > 0)
+    const complexityLimit = config.GRAPHQL_COMPLEXITY_LIMIT;
+    if (complexityLimit > 0) {
+        const complexity = calculateComplexity(ast);
+        if (complexity > complexityLimit) {
+            throw new Error(`Validation Error: Query complexity ${complexity} exceeds maximum allowed complexity of ${complexityLimit}.`);
+        }
     }
 
     // 4. Schema Validation
@@ -141,8 +150,50 @@ function getDepth(selectionSet, currentDepth = 0) {
 }
 
 /**
+ * Calculates a rough complexity score for a GraphQL AST.
+ * The score is the total number of selected fields across all operations and fragments,
+ * which is a cheap, deterministic proxy for query cost.
+ *
+ * @param {object} ast - The parsed GraphQL document AST.
+ * @returns {number} The complexity score.
+ */
+function calculateComplexity(ast) {
+    let count = 0;
+    visit(ast, {
+        Field() {
+            count += 1;
+        }
+    });
+    return count;
+}
+
+/**
+ * Enforces the introspection allowlist. When `config.INTROSPECTION_ALLOWLIST` is non-empty,
+ * schema introspection is only permitted for endpoints present in the list. An empty
+ * allowlist (the default) permits introspection of any configured endpoint — preserving
+ * the previous behavior.
+ *
+ * @param {string} [endpoint=config.GRAPHQL_MCP_ENDPOINT] - The endpoint being introspected.
+ * @throws {Error} If the endpoint is not allowlisted.
+ */
+export function assertIntrospectionAllowed(endpoint = config.GRAPHQL_MCP_ENDPOINT) {
+    const allowlist = config.INTROSPECTION_ALLOWLIST || [];
+    if (allowlist.length === 0) {
+        return; // No allowlist configured: introspection is open (previous behavior).
+    }
+    if (!allowlist.includes(endpoint)) {
+        throw new Error(
+            `Introspection Error: Endpoint is not in the introspection allowlist.\n\n` +
+            `How to fix:\n` +
+            `1. Add the endpoint to the INTROSPECTION_ALLOWLIST environment variable (comma-separated).\n` +
+            `2. Or leave INTROSPECTION_ALLOWLIST unset to permit introspection of the configured endpoint.`
+        );
+    }
+}
+
+/**
  * Sanitizes the GraphQL response to remove sensitive information and ensure correct format.
- * 
+ *
  * @param {object} data - The GraphQL response object.
  * @returns {object} - The sanitized response.
  */
@@ -154,23 +205,27 @@ export function sanitizeResponse(data) {
     const sanitized = { ...data };
 
     if (sanitized.errors && Array.isArray(sanitized.errors)) {
-        sanitized.errors = sanitized.errors.map(err => {
-            const cleanError = {
-                message: err.message || "Unknown Error",
-                locations: err.locations,
-                path: err.path,
-                extensions: err.extensions
-            };
+        sanitized.errors = sanitized.errors
+            // Drop null / non-object error items defensively so a malformed upstream
+            // payload can never crash the sanitizer.
+            .filter(err => err && typeof err === 'object')
+            .map(err => {
+                const cleanError = {
+                    message: err.message || "Unknown Error",
+                    locations: err.locations,
+                    path: err.path,
+                    extensions: err.extensions
+                };
 
-            // Sanitize extensions
-            if (cleanError.extensions) {
-                // Remove stacktrace and internal exception details commonly added by some servers
-                delete cleanError.extensions.exception;
-                delete cleanError.extensions.stacktrace;
-            }
+                // Sanitize extensions
+                if (cleanError.extensions && typeof cleanError.extensions === 'object') {
+                    // Remove stacktrace and internal exception details commonly added by some servers
+                    delete cleanError.extensions.exception;
+                    delete cleanError.extensions.stacktrace;
+                }
 
-            return cleanError;
-        });
+                return cleanError;
+            });
     }
 
     return sanitized;

@@ -1,5 +1,5 @@
 # Service 1: GraphQL MCP Server
-FROM node:18-alpine
+FROM node:26-alpine
 WORKDIR /app
 
 # Install dependencies first (caching)

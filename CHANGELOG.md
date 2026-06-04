@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `graphql-mcp`: `engines.node >= 20`; the Docker image and CI now run on
+  **Node 22 LTS** (was Node 18 in the image).
 - `graphql-mcp`: configurable query guardrails — `GRAPHQL_MAX_DEPTH` (default 15,
   matching the previous hardcoded limit), opt-in `GRAPHQL_COMPLEXITY_LIMIT`
   (default 0 = disabled), and `INTROSPECTION_ALLOWLIST` (default empty = allow
@@ -27,7 +29,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - CI (`ci-cd.yml`): upgraded to `actions/checkout@v4` + `actions/setup-node@v4`,
-  Node 20/22 matrix, and now runs both `npm test` and `npm run test:security`.
+  standardized on the **Node 22 LTS** runner, and now runs both `npm test` and
+  `npm run test:security`.
+- CI (`security-baseline.yml`): `actions/upload-artifact` v4 → v7.
+- Dependencies (safe, in-range bumps; **Express held at 4.x** to preserve
+  behavior): `@modelcontextprotocol/sdk` → ^1.29, `dotenv` → ^17.4, `graphql` →
+  ^16.14, `zod` → ^4.4.
 - `package.json`: declared `"license": "GPL-3.0-or-later"`.
 
 ### Fixed

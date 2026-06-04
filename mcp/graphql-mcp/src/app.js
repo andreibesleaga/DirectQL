@@ -227,7 +227,7 @@ export function createMcpServer() {
                 };
             } catch (error) {
                 logger.error("Failed to fetch schema", { error: error.message });
-                throw new Error(`Failed to fetch schema resource: ${error.message}`);
+                throw new Error(`Failed to fetch schema resource: ${error.message}`, { cause: error });
             }
         }
     );
@@ -273,7 +273,7 @@ export function createMcpServer() {
                 return { contents: [{ uri: uri.href, text, mimeType: "text/plain" }] };
             } catch (error) {
                 logger.error("Failed to read local schema", { name, error: error.message });
-                throw new Error(`Failed to read local schema '${name}': ${error.message}`);
+                throw new Error(`Failed to read local schema '${name}': ${error.message}`, { cause: error });
             }
         }
     );

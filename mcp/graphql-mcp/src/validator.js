@@ -37,7 +37,7 @@ export function validateQuery(query, variables = {}, schema = null) {
             enhancedMessage += `\n\nHow to fix:\n1. Check for missing braces or parentheses.\n2. Ensure field names are correct.`;
         }
 
-        throw new Error(enhancedMessage);
+        throw new Error(enhancedMessage, { cause: error });
     }
 
     // 3. Security Checks

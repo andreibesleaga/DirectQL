@@ -9,7 +9,7 @@ ESM); the other three services are upstream Docker images configured via
 
 ## Prerequisites
 
-- Node.js 20+ (CI runs the test matrix on Node 20 and 22).
+- Node.js 22 LTS (the Docker image and CI both run on Node 22; `engines` requires `>=20`).
 - npm (use the committed `mcp/graphql-mcp/package-lock.json`).
 - Docker + Docker Compose (only needed for the full-stack e2e flow).
 

@@ -2,13 +2,14 @@
 import express from "express";
 import rateLimit from "express-rate-limit";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { config } from "./config.js";
 import logger from "./logger.js";
-import { getCachedOrFetch } from "./cache.js";
+import { getCachedOrFetch, listLocalSchemas, readLocalSchema } from "./cache.js";
 import { summarize } from "./utils.js";
-import { validateQuery, sanitizeResponse } from "./validator.js";
+import { validateQuery, sanitizeResponse, assertIntrospectionAllowed } from "./validator.js";
+import { register as metricsRegister } from "./metrics.js";
 
 const app = express();
 
@@ -67,6 +68,20 @@ app.get("/health", (req, res) => {
     // Logic: connection to GitHub / schemas could be checked here
     // For now, simple up status
     res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
+// Prometheus metrics (additive; toggle with METRICS_ENABLED, default on)
+app.get("/metrics", async (req, res) => {
+    if (!config.METRICS_ENABLED) {
+        return res.status(404).json({ status: "error", message: "Metrics disabled" });
+    }
+    try {
+        res.set("Content-Type", metricsRegister.contentType);
+        res.status(200).send(await metricsRegister.metrics());
+    } catch (error) {
+        logger.error("Failed to render metrics", { error: error.message });
+        res.status(500).json({ status: "error", message: "Failed to render metrics" });
+    }
 });
 
 app.get("/openapi.json", (req, res) => {
@@ -197,6 +212,7 @@ export function createMcpServer() {
         "graphql://schema",
         async (uri) => {
             try {
+                assertIntrospectionAllowed();
                 const { printSchema } = await import("graphql");
                 // Use the shared schema fetcher
                 const schema = await getOrFetchSchema();
@@ -223,6 +239,7 @@ export function createMcpServer() {
         {},
         async () => {
             try {
+                assertIntrospectionAllowed();
                 const { getIntrospectionQuery } = await import("graphql");
                 const query = getIntrospectionQuery();
                 // We do not cache raw introspection JSON for now, only SDL, but we could.
@@ -230,6 +247,33 @@ export function createMcpServer() {
                 return { content: [{ type: "text", text: JSON.stringify(data) }] };
             } catch (error) {
                 return { content: [{ type: "text", text: `Error: ${error.message}` }] };
+            }
+        }
+    );
+
+    // Resource Template: local schema files exposed as graphql://local/<filename>
+    server.resource(
+        "graphql-local-schema",
+        new ResourceTemplate("graphql://local/{name}", {
+            list: async () => {
+                const files = await listLocalSchemas();
+                return {
+                    resources: files.map(name => ({
+                        uri: `graphql://local/${name}`,
+                        name,
+                        description: `Local GraphQL schema file: ${name}`,
+                        mimeType: "text/plain"
+                    }))
+                };
+            }
+        }),
+        async (uri, { name }) => {
+            try {
+                const text = await readLocalSchema(name);
+                return { contents: [{ uri: uri.href, text, mimeType: "text/plain" }] };
+            } catch (error) {
+                logger.error("Failed to read local schema", { name, error: error.message });
+                throw new Error(`Failed to read local schema '${name}': ${error.message}`);
             }
         }
     );
@@ -351,7 +395,7 @@ app.post("/sse", async (req, res) => {
                     ]
                 });
 
-            case "tools/call":
+            case "tools/call": {
                 const toolName = params?.name;
                 const toolArgs = params?.arguments || {};
 
@@ -359,6 +403,7 @@ app.post("/sse", async (req, res) => {
 
                 if (toolName === "introspect-graphql-schema") {
                     try {
+                        assertIntrospectionAllowed();
                         const { getIntrospectionQuery } = await import("graphql");
                         const query = getIntrospectionQuery();
                         const data = await executeGraphQL(query);
@@ -385,8 +430,16 @@ app.post("/sse", async (req, res) => {
                 } else {
                     return sendError(-32601, `Unknown tool: ${toolName}`);
                 }
+            }
 
-            case "resources/list":
+            case "resources/list": {
+                const localFiles = await listLocalSchemas();
+                const localResources = localFiles.map(name => ({
+                    uri: `graphql://local/${name}`,
+                    name,
+                    description: `Local GraphQL schema file: ${name}`,
+                    mimeType: "text/plain"
+                }));
                 return sendResult({
                     resources: [
                         {
@@ -394,15 +447,18 @@ app.post("/sse", async (req, res) => {
                             name: "GraphQL Schema",
                             description: "The introspected GraphQL schema in SDL format",
                             mimeType: "text/plain"
-                        }
+                        },
+                        ...localResources
                     ]
                 });
+            }
 
-            case "resources/read":
+            case "resources/read": {
                 const uri = params?.uri;
                 logger.info(`Resource Read: ${uri}`);
                 if (uri === "graphql://schema") {
                     try {
+                        assertIntrospectionAllowed();
                         // Reuse the centralized schema fetcher if possible, or keep this efficiently caching SDL
                         const schemaSDL = await getCachedOrFetch("schema_sdl", async () => {
                             const { printSchema } = await import("graphql");
@@ -419,9 +475,24 @@ app.post("/sse", async (req, res) => {
                     } catch (error) {
                         return sendError(-32000, `Failed to read schema: ${error.message}`);
                     }
+                } else if (typeof uri === "string" && uri.startsWith("graphql://local/")) {
+                    try {
+                        const name = uri.slice("graphql://local/".length);
+                        const text = await readLocalSchema(name);
+                        return sendResult({
+                            contents: [{
+                                uri: uri,
+                                text: text,
+                                mimeType: "text/plain"
+                            }]
+                        });
+                    } catch (error) {
+                        return sendError(-32000, `Failed to read local schema: ${error.message}`);
+                    }
                 } else {
                     return sendError(-32602, `Unknown resource: ${uri}`);
                 }
+            }
 
             case "prompts/list":
                 return sendResult({
@@ -436,7 +507,7 @@ app.post("/sse", async (req, res) => {
                     ]
                 });
 
-            case "prompts/get":
+            case "prompts/get": {
                 const promptName = params?.name;
                 if (promptName === "write-graphql-query") {
                     const request = params?.arguments?.request || "a query";
@@ -449,6 +520,7 @@ app.post("/sse", async (req, res) => {
                 } else {
                     return sendError(-32602, `Unknown prompt: ${promptName}`);
                 }
+            }
 
             default:
                 return sendError(-32601, `Method not found: ${method}`);

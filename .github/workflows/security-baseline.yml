@@ -1,0 +1,141 @@
+name: Security Baseline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 6 * * 1" # weekly, Monday 06:00 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  supply-chain:
+    name: SBOM, CVE scan & license check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mcp/graphql-mcp
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mcp/graphql-mcp/package-lock.json
+
+      - name: Install (clean, from lockfile)
+        run: npm ci
+
+      - name: npm audit (report-only; high+)
+        run: npm audit --audit-level=high
+        continue-on-error: true # report-only until backlog is triaged
+
+      - name: Generate CycloneDX 1.6 SBOM
+        run: npx --yes @cyclonedx/cyclonedx-npm@latest --output-format JSON --spec-version 1.6 --output-file sbom.json
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-cyclonedx
+          path: mcp/graphql-mcp/sbom.json
+
+      - name: License allow-list check
+        run: >-
+          npx --yes license-checker-rseidelsohn@latest
+          --onlyAllow "MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;0BSD;CC0-1.0;Unlicense;Python-2.0;BlueOak-1.0.0;GPL-3.0-or-later"
+          --excludePrivatePackages
+        continue-on-error: true # report-only until dependency licenses are reviewed
+
+  osv-scanner:
+    name: OSV-Scanner
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run OSV-Scanner
+        uses: google/osv-scanner-action/osv-scanner-action@v2.2.2
+        continue-on-error: true
+        with:
+          scan-args: |-
+            --lockfile=mcp/graphql-mcp/package-lock.json
+            --format=sarif
+            --output=osv.sarif
+      - name: Upload OSV SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: osv.sarif
+          category: osv-scanner
+
+  trivy-fs:
+    name: Trivy filesystem scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run Trivy (fs)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scanners: vuln,secret,misconfig
+          format: sarif
+          output: trivy-fs.sarif
+          severity: HIGH,CRITICAL
+      - name: Upload Trivy SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-fs.sarif
+          category: trivy-fs
+
+  trivy-image:
+    name: Trivy image scan (graphql-mcp)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build graphql-mcp image
+        run: docker build -f mcp/graphql-mcp/Dockerfile -t directql/graphql-mcp:ci .
+      - name: Run Trivy (image)
+        uses: aquasecurity/trivy-action@0.28.0
+        continue-on-error: true
+        with:
+          scan-type: image
+          image-ref: directql/graphql-mcp:ci
+          format: sarif
+          output: trivy-image.sarif
+          severity: HIGH,CRITICAL
+      - name: Upload Trivy image SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-image.sarif
+          category: trivy-image
+
+  gitleaks:
+    name: Gitleaks secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "false"

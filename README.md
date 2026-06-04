@@ -15,6 +15,24 @@ Complete **AI stack** designed for local development, deployment, usage, of an i
 
 ## System Architecture
 
+DirectQL composes four loosely-coupled services (see the data-flow diagram below):
+`graphql-mcp` (first-party Node/ESM gateway) adapts GraphQL APIs to the MCP
+protocol; `open-webui` is the OpenAI-API-compatible chat UI; `ollama` is an
+optional local LLM runtime; and `db-mcp` (MindsDB) federates SQL/data sources.
+Only `graphql-mcp` is first-party code (`mcp/graphql-mcp/`); the rest are upstream
+images wired together in [`docker-compose.yml`](docker-compose.yml) and `infra/`.
+
+### Documentation
+
+| Doc | Contents |
+|---|---|
+| [SECURITY.md](SECURITY.md) | Disclosure policy + secret/API-key handling. |
+| [SECRETS.md](SECRETS.md) | Per-secret scope minimization and rotation. |
+| [docs/THREAT-MODEL.md](docs/THREAT-MODEL.md) | T1–T6 threats and shipped mitigations. |
+| [docs/CACHE.md](docs/CACHE.md) | 3-tier schema cache: tiers, TTL, keys, metrics. |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Dev workflow and PR checklist. |
+| [CHANGELOG.md](CHANGELOG.md) | Notable changes (Keep a Changelog). |
+
 ## Key Features
 -   **GraphQL MCP Server**: `graphql-mcp` with modular architecture.
 -   **Smart Schema Caching**: Implements a 3-tier caching strategy (Memory -> Local Disk -> Remote Fetch) to minimize expensive introspection calls.
@@ -125,7 +143,35 @@ sequenceDiagram
       PORT=3000
       AUTH_TYPE=Bearer  # or x-api-key or none
       GRAPHQL_READ_ONLY=true # Enforce read-only queries
+
+      # Optional query guardrails (defaults preserve previous behavior)
+      GRAPHQL_MAX_DEPTH=15            # max query depth (default 15)
+      GRAPHQL_COMPLEXITY_LIMIT=0      # max field count; 0 = disabled, recommended 1000 when exposed
+      # INTROSPECTION_ALLOWLIST=https://api.github.com/graphql  # comma-separated; empty = allow configured endpoint
+
+      # Observability
+      METRICS_ENABLED=true           # expose Prometheus metrics at GET /metrics
+      LOG_LEVEL=info
       ```
+
+      > A complete, commented template lives in [`.env.example`](.env.example).
+      > For secret scope and rotation guidance see [SECRETS.md](SECRETS.md).
+
+    **Endpoints exposed by `graphql-mcp`**
+
+    | Method & path | Purpose |
+    |---|---|
+    | `GET /health` | Liveness probe (`{status:"ok"}`). |
+    | `GET /metrics` | Prometheus metrics incl. `directql_schema_cache_*` (toggle `METRICS_ENABLED`). |
+    | `GET /openapi.json` | Minimal OpenAPI description of the MCP surface. |
+    | `GET/POST /sse`, `POST /messages` | MCP over SSE / stateless JSON-RPC. |
+
+    **MCP resources**
+
+    - `graphql://schema` — the live introspected schema (SDL).
+    - `graphql://local/<filename>` — any `.graphql`/`.gql` file under
+      [`mcp/graphql-mcp/schemas/`](mcp/graphql-mcp/schemas/), listed via
+      `resources/list` and read via `resources/read` (path-traversal safe).
 
 
 ## MindsDB Integration (db-mcp)
@@ -214,7 +260,7 @@ The project includes several helper scripts to verify the stack locally using Do
             "env": {
                 "GRAPHQL_READ_ONLY": "true",
                 "GRAPHQL_API_KEY": "your_github_token",
-                "GRAPHQL_ENDPOINT": "https://api.github.com/graphql",
+                "GRAPHQL_MCP_ENDPOINT": "https://api.github.com/graphql",
                 "AUTH_TYPE": "Bearer"                
             }
         }
@@ -236,12 +282,45 @@ node mcp/graphql-mcp/test/e2e/mcp_protocol.js
 
 ### Other Tests
 ```bash
-# Jest integration tests
+# Jest unit + integration tests
 cd mcp/graphql-mcp && npm test
 
 # Security tests (read-only mode)
 cd mcp/graphql-mcp && npm run test:security
+
+# Lint (report-only floor)
+cd mcp/graphql-mcp && npm run lint
 ```
+
+### Manual Review & Verification
+
+Reproducible manual checks for the `graphql-mcp` service.
+
+- **path**: `mcp/graphql-mcp/`
+- **config**: copy [`.env.example`](.env.example) → `.env` (root) and set at least
+  `GRAPHQL_MCP_ENDPOINT` and `GRAPHQL_API_KEY`. Optional guardrails:
+  `GRAPHQL_MAX_DEPTH`, `GRAPHQL_COMPLEXITY_LIMIT`, `INTROSPECTION_ALLOWLIST`,
+  `METRICS_ENABLED`.
+- **run**:
+  ```bash
+  cd mcp/graphql-mcp
+  npm ci
+  npm test                 # unit + integration (Jest)
+  npm run test:security    # read-only enforcement
+  npm start                # starts the HTTP/SSE server on PORT (default 3000)
+  ```
+- **examples** (against a running server):
+  ```bash
+  curl -s localhost:3000/health
+  curl -s localhost:3000/metrics | grep directql_schema_cache
+  curl -s -X POST localhost:3000/sse \
+    -H 'Content-Type: application/json' \
+    -d '{"jsonrpc":"2.0","id":1,"method":"resources/list"}'
+  ```
+- **result**: `/health` → `{"status":"ok",...}`; `/metrics` lists
+  `directql_schema_cache_hits_total` / `_misses_total` / `_keys`; `resources/list`
+  includes `graphql://schema` plus a `graphql://local/<file>` entry per file under
+  `schemas/`. Full-stack e2e: `./scripts/test-local-setup.sh` exits 0.
 
 The AI Agent can connect to the MCP Server using the following configuration:
 1. Open your deployed WebUI (`https://webui-xyz.app`)

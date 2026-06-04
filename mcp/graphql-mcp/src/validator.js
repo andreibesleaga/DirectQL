@@ -91,6 +91,11 @@ export function validateQuery(query, variables = {}, schema = null) {
  */
 function calculateDepth(ast) {
     let maxDepth = 0;
+    const fragments = new Map(
+        ast.definitions
+            .filter(def => def.kind === Kind.FRAGMENT_DEFINITION)
+            .map(def => [def.name.value, def])
+    );
 
     visit(ast, {
         OperationDefinition(node) {
@@ -114,14 +119,14 @@ function calculateDepth(ast) {
 
     for (const def of ast.definitions) {
         if (def.kind === Kind.OPERATION_DEFINITION || def.kind === Kind.FRAGMENT_DEFINITION) {
-            maxDepth = Math.max(maxDepth, getDepth(def.selectionSet));
+            maxDepth = Math.max(maxDepth, getDepth(def.selectionSet, fragments));
         }
     }
 
     return maxDepth;
 }
 
-function getDepth(selectionSet, currentDepth = 0) {
+function getDepth(selectionSet, fragments, currentDepth = 0, activeFragments = new Set()) {
     if (!selectionSet || !selectionSet.selections) return currentDepth;
 
     let maxChildDepth = currentDepth;
@@ -129,21 +134,32 @@ function getDepth(selectionSet, currentDepth = 0) {
     for (const selection of selectionSet.selections) {
         if (selection.kind === Kind.FIELD) {
             if (selection.selectionSet) {
-                const depth = getDepth(selection.selectionSet, currentDepth + 1);
+                const depth = getDepth(selection.selectionSet, fragments, currentDepth + 1, activeFragments);
                 maxChildDepth = Math.max(maxChildDepth, depth);
             } else {
                 // A leaf field acts as depth + 1
                 maxChildDepth = Math.max(maxChildDepth, currentDepth + 1);
             }
-        } else if (selection.kind === Kind.INLINE_FRAGMENT || selection.kind === Kind.FRAGMENT_SPREAD) {
+        } else if (selection.kind === Kind.INLINE_FRAGMENT) {
             // For simplicity, treat fragments as passthrough or +0, but standard depth usually counts nested fields.
             // Inline fragments have a selectionSet.
             if (selection.selectionSet) {
-                const depth = getDepth(selection.selectionSet, currentDepth); // Don't increment for fragment wrapper itself
+                const depth = getDepth(selection.selectionSet, fragments, currentDepth, activeFragments); // Don't increment for fragment wrapper itself
                 maxChildDepth = Math.max(maxChildDepth, depth);
             }
-            // FragmentSpread we can't easily resolve without looking up fragments. 
-            // We'll skip complex fragment handling for now or assume shallow.
+        } else if (selection.kind === Kind.FRAGMENT_SPREAD) {
+            const fragmentName = selection.name.value;
+            if (activeFragments.has(fragmentName)) {
+                continue;
+            }
+
+            const fragmentDefinition = fragments.get(fragmentName);
+            if (fragmentDefinition?.selectionSet) {
+                const nextActiveFragments = new Set(activeFragments);
+                nextActiveFragments.add(fragmentName);
+                const depth = getDepth(fragmentDefinition.selectionSet, fragments, currentDepth, nextActiveFragments);
+                maxChildDepth = Math.max(maxChildDepth, depth);
+            }
         }
     }
     return maxChildDepth;

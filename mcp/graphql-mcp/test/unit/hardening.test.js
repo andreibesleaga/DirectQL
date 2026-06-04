@@ -42,6 +42,28 @@ describe('Configurable depth limit', () => {
             config.GRAPHQL_MAX_DEPTH = original;
         }
     });
+
+    test('counts nested depth inside fragment spreads', () => {
+        const original = config.GRAPHQL_MAX_DEPTH;
+        config.GRAPHQL_MAX_DEPTH = 2;
+        try {
+            const query = `
+                query {
+                    a {
+                        ...DeepFields
+                    }
+                }
+                fragment DeepFields on Type {
+                    b {
+                        c
+                    }
+                }
+            `;
+            expect(() => validateQuery(query)).toThrow('exceeds maximum allowed depth of 2');
+        } finally {
+            config.GRAPHQL_MAX_DEPTH = original;
+        }
+    });
 });
 
 describe('Query complexity limit (opt-in)', () => {

@@ -43,6 +43,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Documented GitHub-token scope minimization and 90-day rotation (`SECRETS.md`),
   and the T1–T6 threat model with mitigations (`docs/THREAT-MODEL.md`).
+- Resolved all 9 known dependency advisories (8 moderate + 1 high, incl.
+  `fast-uri`, `qs`/`express`, `hono`, `ip-address`/`express-rate-limit`,
+  `brace-expansion`) via a semver-compatible `npm audit fix` — lockfile only, no
+  direct-dependency or API changes. `npm audit` now reports **0 vulnerabilities**.
 
 ## [1.0.0]
 

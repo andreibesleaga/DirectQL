@@ -86,7 +86,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Run Trivy (fs)
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: fs
           scanners: vuln,secret,misconfig
@@ -112,7 +112,7 @@ jobs:
       - name: Build graphql-mcp image
         run: docker build -f mcp/graphql-mcp/Dockerfile -t directql/graphql-mcp:ci .
       - name: Run Trivy (image)
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         continue-on-error: true
         with:
           scan-type: image

@@ -1,6 +1,6 @@
 ## DirectQL - Interactive Data AI Platform
 
-Complete **AI stack** designed for local development, deployment and usage, of an interactive AI chat agent, that can access **GraphQL APIs and federated data sources** and communicates with natural language to make queries and retrieve information from endpoints, with focus on **GitHub GraphQL APIs**, **MindsDB** (configurable GraphQL/OpenAPI endpoints, DBs, MCP servers).
+Complete **AI data stack** designed for local development, deployment and usage, of an interactive AI chat agent, that can access **GraphQL APIs and federated data sources** and communicates with natural language to make queries and retrieve information from endpoints, with focus on **GitHub GraphQL APIs**, **MindsDB** (configurable GraphQL/OpenAPI endpoints, DBs, MCP servers).
 
 
 - **GraphQL MCP Server, Open WebUI, GitHub GraphQL API, Ollama, OpenRouter, MindsDB**

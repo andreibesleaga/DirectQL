@@ -18,7 +18,7 @@
     "@modelcontextprotocol/sdk": "^1.29.0",
     "dotenv": "^17.4.2",
     "eventsource": "^4.1.0",
-    "express": "^4.22.2",
+    "express": "^5.2.1",
     "express-rate-limit": "^8.5.1",
     "graphql": "^16.14.1",
     "node-cache": "^5.1.2",

@@ -130,6 +130,9 @@ jobs:
   gitleaks:
     name: Gitleaks secret scan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -138,4 +141,7 @@ jobs:
       - name: Run gitleaks
         uses: gitleaks/gitleaks-action@v3
         env:
+          # gitleaks-action v3 requires GITHUB_TOKEN to scan pull_request events;
+          # without it the action errors on every PR (push-event scans still pass).
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "false"

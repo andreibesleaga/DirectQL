@@ -20,7 +20,7 @@ jobs:
         working-directory: mcp/graphql-mcp
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Node 22
         uses: actions/setup-node@v6
@@ -60,7 +60,7 @@ jobs:
       security-events: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Run OSV-Scanner
         uses: google/osv-scanner-action/osv-scanner-action@v2.3.8
         continue-on-error: true
@@ -84,7 +84,7 @@ jobs:
       security-events: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Run Trivy (fs)
         uses: aquasecurity/trivy-action@v0.36.0
         with:
@@ -108,7 +108,7 @@ jobs:
       security-events: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Build graphql-mcp image
         run: docker build -f mcp/graphql-mcp/Dockerfile -t directql/graphql-mcp:ci .
       - name: Run Trivy (image)
@@ -135,7 +135,7 @@ jobs:
       pull-requests: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Run gitleaks

@@ -15,11 +15,11 @@
     "lint": "eslint src test"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "dotenv": "^17.4.2",
     "eventsource": "^4.1.0",
     "express": "^5.2.1",
-    "express-rate-limit": "^8.6.0",
+    "express-rate-limit": "^8.6.1",
     "graphql": "^17.0.2",
     "node-cache": "^5.1.2",
     "prom-client": "^15.1.3",

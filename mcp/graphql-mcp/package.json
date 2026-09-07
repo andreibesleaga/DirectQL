@@ -28,8 +28,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.0",
-    "eslint": "^10.8.1",
-    "jest": "^30.4.2",
+    "eslint": "^10.9.1",
+    "jest": "^30.5.1",
     "supertest": "^7.2.2"
   }
 }

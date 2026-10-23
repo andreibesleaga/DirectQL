@@ -9,17 +9,17 @@ Complete **AI data stack** designed for local development, deployment and usage,
 
 ## Services
 1. **graphql-mcp**: MCP server that exposes GraphQL APIs as a service for AI agents.
-2. **open-webui**: The chat interface (ChatGPT clone).
+2. **open-webui**: The chat interface (open-source web UI for LLM chat).
 3. **ollama**: (Optional) A local LLM runner.
 4. **db-mcp**: MindsDB for data federation and data access via AI.
 
 ## System Architecture
 
 DirectQL composes four loosely-coupled services (see the data-flow diagram below):
-`graphql-mcp` (first-party Node/ESM gateway) adapts GraphQL APIs to the MCP
+`graphql-mcp` (this repository's own Node/ESM gateway) adapts GraphQL APIs to the MCP
 protocol; `open-webui` is the OpenAI-API-compatible chat UI; `ollama` is an
 optional local LLM runtime; and `db-mcp` (MindsDB) federates SQL/data sources.
-Only `graphql-mcp` is first-party code (`mcp/graphql-mcp/`); the rest are upstream
+Only `graphql-mcp` is code maintained here (`mcp/graphql-mcp/`); the rest are upstream
 images wired together in [`docker-compose.yml`](docker-compose.yml) and `infra/`.
 
 ### Documentation
@@ -244,8 +244,8 @@ The project includes several helper scripts to verify the stack locally using Do
     -   Scans recent logs for errors.
     -   Streams live logs from all containers.
 
-### 4. `./mcp/graphql-mcp/cli.js`
-**Usage**: `node mcp/graphql-mcp/cli.js`
+### 4. `./mcp/graphql-mcp/src/cli.js`
+**Usage**: `node mcp/graphql-mcp/src/cli.js`
 -   **Purpose**: GraphQL MCP Server CLI - for proxying MCP to AI assistant.
 -   **Configuration**: edit your AI assistant's configuration file to run the MCP server:
 ```
@@ -254,9 +254,9 @@ The project includes several helper scripts to verify the stack locally using Do
         "DirectQL": {
             "command": "node",
             "args": [
-                "/DirectQL/graphql-mcp/cli.js"
+                "/DirectQL/mcp/graphql-mcp/src/cli.js"
             ],
-            "cwd": "/DirectQL/graphql-mcp",
+            "cwd": "/DirectQL/mcp/graphql-mcp",
             "env": {
                 "GRAPHQL_READ_ONLY": "true",
                 "GRAPHQL_API_KEY": "your_github_token",

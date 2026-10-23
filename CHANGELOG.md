@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `graphql-mcp` (stdio mode): every log line now goes to stderr without colour codes, and dotenv runs quietly,
+  so stdout carries only MCP JSON-RPC. Before, two coloured log lines reached stdout on start and strict MCP
+  clients reported parse errors. HTTP mode logs to stderr as well.
+- README: the stdio command and the client configuration now point at `mcp/graphql-mcp/src/cli.js` (the old
+  `mcp/graphql-mcp/cli.js` path does not exist); wording of the services list corrected.
+
 ### Added
 
 - `graphql-mcp`: `engines.node >= 20`; the Docker image and CI now run on

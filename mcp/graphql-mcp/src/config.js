@@ -3,8 +3,9 @@ import dotenv from 'dotenv';
 import { z } from 'zod';
 import logger from './logger.js';
 
-dotenv.config({ path: ["../.env", "../../.env"] });
-dotenv.config(); // Also try local .env
+// quiet: dotenv 17 otherwise prints an "injecting env" line, which would corrupt the stdio MCP stream.
+dotenv.config({ path: ["../.env", "../../.env"], quiet: true });
+dotenv.config({ quiet: true }); // Also try local .env
 
 const configSchema = z.object({
     PORT: z.string().default("3000").transform(Number),

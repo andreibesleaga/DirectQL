@@ -3,7 +3,7 @@
 Thanks for your interest in improving **DirectQL**.
 
 DirectQL is a four-service stack (`graphql-mcp`, `open-webui`, `ollama`,
-`db-mcp`). The only first-party code lives in **`mcp/graphql-mcp/`** (Node.js,
+`db-mcp`). The only code maintained in this repository lives in **`mcp/graphql-mcp/`** (Node.js,
 ESM); the other three services are upstream Docker images configured via
 `docker-compose.yml` and `infra/`.
 

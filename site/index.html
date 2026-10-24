@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DirectQL</title>
+<meta name="description" content="DirectQL: ask GraphQL APIs and databases in plain language. A self-hosted AI data stack with a GraphQL MCP server, Open WebUI, Ollama or OpenRouter, and MindsDB.">
+<link rel="canonical" href="https://andreibesleaga.github.io/DirectQL/">
+<meta name="author" content="Andrei N. Besleaga">
+<meta name="tdm-reservation" content="1">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="DirectQL">
+<meta property="og:title" content="DirectQL">
+<meta property="og:description" content="Ask GraphQL APIs and databases in plain language. A self-hosted AI data stack with a GraphQL MCP server, Open WebUI, Ollama or OpenRouter, and MindsDB.">
+<meta property="og:url" content="https://andreibesleaga.github.io/DirectQL/">
+<meta property="og:image" content="https://andreibesleaga.github.io/DirectQL/img/og.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="DirectQL architecture: Open WebUI connects to a GraphQL MCP server, a language model and MindsDB, which reach GitHub and SQL data sources">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="DirectQL">
+<meta name="twitter:description" content="Ask GraphQL APIs and databases in plain language. A self-hosted AI data stack with a GraphQL MCP server, Open WebUI, Ollama or OpenRouter, and MindsDB.">
+<meta name="twitter:image" content="https://andreibesleaga.github.io/DirectQL/img/og.png">
+<meta name="twitter:image:alt" content="DirectQL architecture: Open WebUI connects to a GraphQL MCP server, a language model and MindsDB, which reach GitHub and SQL data sources">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareSourceCode",
+  "name": "DirectQL",
+  "description": "Ask GraphQL APIs and databases in plain language. A self-hosted AI data stack with a GraphQL MCP server, Open WebUI, Ollama or OpenRouter, and MindsDB.",
+  "url": "https://andreibesleaga.github.io/DirectQL/",
+  "codeRepository": "https://github.com/andreibesleaga/DirectQL",
+  "programmingLanguage": "JavaScript",
+  "runtimePlatform": "Node.js",
+  "version": "0.2.0-beta",
+  "license": "https://www.gnu.org/licenses/gpl-3.0.html",
+  "keywords": ["GraphQL", "MCP", "Model Context Protocol", "MindsDB", "Open WebUI", "Ollama", "natural language query", "AI data platform"],
+  "image": "https://andreibesleaga.github.io/DirectQL/img/og.png",
+  "author": {
+    "@type": "Person",
+    "name": "Andrei N. Besleaga",
+    "url": "https://andreibesleaga.com/",
+    "sameAs": [
+      "https://github.com/andreibesleaga",
+      "https://orcid.org/0009-0001-3464-5283"
+    ]
+  }
+}
+</script>
+<style>
+:root{--bg:#fff;--fg:#1f2328;--muted:#4b5563;--line:#d8dee4;--accent:#0a58ca;--code:#f3f4f6}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1317;--fg:#e6e9ed;--muted:#a3adb8;--line:#2d343c;--accent:#7db3ff;--code:#1a2027}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+.wrap{max-width:42rem;margin:0 auto;padding:3rem 1rem 2rem}
+h1{font-size:1.75rem;line-height:1.2;margin:0 0 .5rem}
+h2{font-size:1.05rem;margin:2.5rem 0 .75rem;padding-top:1rem;border-top:1px solid var(--line)}
+p,li,dd,td,th{font-size:.95rem}
+p{margin:.5rem 0}
+.lead{font-size:1.05rem;color:var(--muted)}
+ul,ol{padding-left:1.25rem;margin:.5rem 0}
+li{margin:.35rem 0}
+a{color:var(--accent);text-underline-offset:.15em}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:6px;padding:.75rem 1rem;margin:.75rem 0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:.85rem;line-height:1.5}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.88em}
+dl{margin:.5rem 0}
+dt{font-weight:600;font-size:.95rem;margin-top:.75rem}
+dd{margin:.15rem 0 0;color:var(--muted)}
+table{width:100%;border-collapse:collapse;margin:.75rem 0}
+th,td{text-align:left;vertical-align:top;padding:.4rem .5rem .4rem 0;border-bottom:1px solid var(--line)}
+th{font-weight:600}
+nav ul{list-style:none;padding:0}
+figure{margin:1.5rem 0 0}
+figure img{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:6px}
+figure.diagram img{background:#fff}
+figcaption{font-size:.85rem;color:var(--muted);margin-top:.4rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--line);font-size:.85rem;color:var(--muted)}
+footer p{font-size:.85rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<h1>DirectQL</h1>
+<p class="lead">Ask GraphQL APIs and databases in plain language. DirectQL is a self-hosted AI data stack: a GraphQL MCP server, the Open WebUI chat, a local or hosted model (Ollama or OpenRouter) and MindsDB for SQL sources. It runs on a laptop with Docker Compose or in the cloud. Current release: v0.2.0-beta.</p>
+</header>
+<main>
+<figure>
+<img src="img/chat-query.webp" width="1280" height="910" alt="Open WebUI chat: a request for the andreibesleaga GitHub profile and repositories, answered with the GraphQL query the model wrote, using the MCPGraphQL tool" decoding="async" fetchpriority="high">
+<figcaption>A plain-language request in Open WebUI. The model writes the GraphQL query and runs it through the DirectQL tool.</figcaption>
+</figure>
+<figure>
+<img src="img/chat-answer.webp" width="894" height="756" alt="The answer: a short profile summary, starred and newest repositories, then the raw JSON response from the GitHub GraphQL API" decoding="async" loading="lazy">
+<figcaption>The answer: a summary first, then the raw API response.</figcaption>
+</figure>
+
+<section aria-labelledby="what">
+<h2 id="what">What it does</h2>
+<ul>
+<li>Answers questions about GitHub, or any GraphQL endpoint, in plain language. The model writes the query; the server checks it against the schema and runs it.</li>
+<li>Queries databases and files through MindsDB: MySQL, PostgreSQL, MongoDB, Snowflake, Redis, CSV and more, with standard SQL.</li>
+<li>Works as a stand-alone MCP server for any MCP client, such as desktop or IDE assistants.</li>
+<li>Runs fully local with Ollama, or with low-cost hosted models through OpenRouter.</li>
+</ul>
+</section>
+
+<section aria-labelledby="how">
+<h2 id="how">How it works</h2>
+<figure class="diagram">
+<img src="img/architecture.webp" width="1280" height="488" alt="Architecture: the user talks to Open WebUI or MindsDB. Open WebUI calls Ollama or OpenRouter for the model, and the GraphQL MCP server and MindsDB over SSE or HTTP. The MCP server reads local schemas and calls GitHub with a bearer token. MindsDB connects to GitHub, MySQL, PostgreSQL, Snowflake, Redis and CSV." decoding="async" loading="lazy">
+<figcaption>Four services. Only the GraphQL MCP server is code in this repository; the others are upstream images wired together.</figcaption>
+</figure>
+<ol>
+<li>You ask a question in the chat.</li>
+<li>The model calls the MCP server, which checks the schema (cached in memory, then on disk, then fetched).</li>
+<li>The server runs the query against the endpoint with your token and returns the data.</li>
+<li>The model answers from that data.</li>
+</ol>
+<p>MCP tools: <code>query-graphql</code> and <code>introspect-graphql-schema</code>; prompt: <code>write-graphql-query</code>; resources: <code>graphql://schema</code> and local schema files.</p>
+</section>
+
+<section aria-labelledby="safety">
+<h2 id="safety">Safe by default</h2>
+<dl>
+<dt>Read-only</dt>
+<dd>Mutations are blocked unless you turn read-only mode off.</dd>
+<dt>Query limits</dt>
+<dd>Maximum depth (15 by default), an optional complexity limit and an introspection allow-list.</dd>
+<dt>Rate limit</dt>
+<dd>100 requests per client every 15 minutes.</dd>
+<dt>Documented threats</dt>
+<dd>A <a href="https://github.com/andreibesleaga/DirectQL/blob/main/docs/THREAT-MODEL.md">threat model</a> covers token theft, abusive queries, SQL injection, schema leaks, cache poisoning and committed secrets.</dd>
+</dl>
+</section>
+
+<section aria-labelledby="start">
+<h2 id="start">Run it locally</h2>
+<p>Needs Docker with Docker Compose and a GitHub token. From the README:</p>
+<pre><code>git clone https://github.com/andreibesleaga/DirectQL
+cd DirectQL
+cp .env.example .env
+# edit .env: set GRAPHQL_API_KEY to your GitHub token
+./scripts/test-local-setup.sh
+./scripts/pull-ollama-model.sh   # optional: llama3.2:1b</code></pre>
+<p>Then open Open WebUI at <code>http://localhost:8080</code> and MindsDB at <code>http://localhost:47334</code>.</p>
+<figure>
+<img src="img/stack-run.webp" width="988" height="565" alt="Two terminals. Left: the setup script starts the graphql-mcp, ollama and open-webui containers and passes the end-to-end checks for health, initialise, tools, resources and introspection. Right: the monitor script shows the running services, their CPU and memory use, no recent errors, and the latest log lines." decoding="async" loading="lazy">
+<figcaption>Left: the setup script starts the stack and runs the end-to-end checks. Right: <code>./scripts/monitor-stack.sh</code> shows services, resource use and logs.</figcaption>
+</figure>
+</section>
+
+<section aria-labelledby="mcp">
+<h2 id="mcp">Use it from any MCP client</h2>
+<pre><code>{
+  "mcpServers": {
+    "DirectQL": {
+      "command": "node",
+      "args": ["/DirectQL/mcp/graphql-mcp/src/cli.js"],
+      "env": {
+        "GRAPHQL_MCP_ENDPOINT": "https://api.github.com/graphql",
+        "GRAPHQL_API_KEY": "your_github_token",
+        "AUTH_TYPE": "Bearer",
+        "GRAPHQL_READ_ONLY": "true"
+      }
+    }
+  }
+}</code></pre>
+<p>Over the network, connect to <code>/sse</code> (MCP over SSE), or send one JSON-RPC request with a <code>POST</code> to <code>/sse</code>.</p>
+</section>
+
+<section aria-labelledby="sql">
+<h2 id="sql">Query databases through MindsDB</h2>
+<p>Connect a source once, then ask about it in SQL or from the chat. For example:</p>
+<pre><code>CREATE DATABASE my_postgres
+WITH ENGINE = 'postgres',
+PARAMETERS = {
+  "host": "host.docker.internal", "port": "5432",
+  "user": "postgres", "password": "…", "database": "postgres"
+};
+
+SELECT * FROM my_postgres.public.orders LIMIT 10;</code></pre>
+<p>More sources are in <a href="https://github.com/andreibesleaga/DirectQL/blob/main/mcp/db-mcp/README.md"><code>mcp/db-mcp/README.md</code></a>.</p>
+</section>
+
+<section aria-labelledby="deploy">
+<h2 id="deploy">Deploy</h2>
+<p><a href="https://github.com/andreibesleaga/DirectQL/blob/main/infra/railway/railway.json"><code>infra/railway/railway.json</code></a> defines three Railway services:</p>
+<table>
+<thead><tr><th scope="col">Service</th><th scope="col">Folder</th><th scope="col">Main settings</th></tr></thead>
+<tbody>
+<tr><td>GraphQL MCP</td><td><code>mcp/graphql-mcp</code></td><td>endpoint, token, read-only on</td></tr>
+<tr><td>Open WebUI</td><td><code>open-webui</code></td><td>OpenRouter URL and key, session secret</td></tr>
+<tr><td>MindsDB</td><td><code>mcp/db-mcp</code></td><td>HTTP and MySQL APIs</td></tr>
+</tbody>
+</table>
+<p>Kubernetes manifests and AWS Terraform are in <a href="https://github.com/andreibesleaga/DirectQL/tree/main/infra"><code>infra/</code></a>.</p>
+</section>
+
+<section aria-labelledby="quality">
+<h2 id="quality">Tested and scanned</h2>
+<ul>
+<li>65 unit and integration tests, plus a read-only security test.</li>
+<li>A 30-check MCP protocol suite against the running stack.</li>
+<li>Every change, and a weekly run, is scanned with OSV-Scanner, Trivy (files and image) and gitleaks, with a CycloneDX SBOM and a licence check.</li>
+</ul>
+</section>
+
+<section aria-labelledby="links">
+<h2 id="links">Links</h2>
+<nav aria-label="Project links">
+<ul>
+<li><a href="https://github.com/andreibesleaga/DirectQL">Source on GitHub</a></li>
+<li><a href="https://github.com/andreibesleaga/DirectQL/releases">Releases</a> and <a href="https://github.com/andreibesleaga/DirectQL/blob/main/CHANGELOG.md">changelog</a></li>
+<li><a href="https://github.com/andreibesleaga/DirectQL/blob/main/SECURITY.md">Security policy</a> and <a href="https://github.com/andreibesleaga/DirectQL/blob/main/SECRETS.md">secret handling</a></li>
+<li>Built on <a href="https://modelcontextprotocol.io/">MCP</a>, <a href="https://openwebui.com/">Open WebUI</a>, <a href="https://ollama.com/">Ollama</a> and <a href="https://mindsdb.com/">MindsDB</a></li>
+</ul>
+</nav>
+</section>
+
+<section aria-labelledby="licence">
+<h2 id="licence">Licence</h2>
+<p>GNU General Public License, version 3 (<a href="https://github.com/andreibesleaga/DirectQL/blob/main/LICENSE"><code>LICENSE</code></a>).</p>
+</section>
+</main>
+<footer>
+<p>By <a href="https://andreibesleaga.com/">Andrei N. Besleaga</a>. See also <a href="https://andreibesleaga.com/projects-demos/">projects on andreibesleaga.com</a>.</p>
+</footer>
+</div>
+</body>
+</html>

@@ -2,6 +2,8 @@
 
 Complete **AI data stack** designed for local development, deployment and usage, of an interactive AI chat agent, that can access **GraphQL APIs and federated data sources** and communicates with natural language to make queries and retrieve information from endpoints, with focus on **GitHub GraphQL APIs**, **MindsDB** (configurable GraphQL/OpenAPI endpoints, DBs, MCP servers).
 
+Website: [andreibesleaga.github.io/DirectQL](https://andreibesleaga.github.io/DirectQL/)
+
 
 - **GraphQL MCP Server, Open WebUI, GitHub GraphQL API, Ollama, OpenRouter, MindsDB**
 - Use case scenario 1: **direct user communication in natural language (and/or agentic AI) with federated graphql introspective schemas and endpoints** (optional local schema caching registration).

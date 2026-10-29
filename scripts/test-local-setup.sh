@@ -2,7 +2,7 @@
 set -e
 
 echo "🛑 Cleaning up existing containers..."
-docker-compose down --remove-orphans || true
+docker compose down --remove-orphans || true
 
 echo "🧪 Running Unit & Integration Tests..."
 # Run local tests first to fail fast
@@ -16,7 +16,7 @@ fi
 
 echo "🏗️ Building and Starting Stack..."
 # Build without cache to ensure latest code, run in background
-docker-compose up -d --build
+docker compose up -d --build
 
 echo "⏳ Waiting for services to become healthy..."
 # Simple wait loop for GraphQL MCP

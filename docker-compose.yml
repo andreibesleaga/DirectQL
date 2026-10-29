@@ -7,8 +7,10 @@ services:
       dockerfile: mcp/graphql-mcp/Dockerfile
     container_name: graphql-mcp
     restart: unless-stopped
+    # Bound to the host's loopback only: graphql-mcp has no authentication (see docs/THREAT-MODEL.md, T7).
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
+    env_file: .env
     environment:
       - PORT=3000
       - GRAPHQL_MCP_ENDPOINT=${GRAPHQL_MCP_ENDPOINT:-https://api.github.com/graphql}
@@ -35,13 +37,6 @@ services:
       - ollama:/root/.ollama
     networks:
       - directql-net
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
     environment:
       - OLLAMA_NUM_CTX=16384
 
@@ -58,6 +53,7 @@ services:
       - OLLAMA_BASE_URL=http://ollama:11434
       - OPENAI_API_BASE_URL=http://ollama:11434/v1
       - OPENAI_API_KEY=ollama
+      - WEBUI_SECRET_KEY=${WEBUI_SECRET_KEY:-}
       # Enable MCP by pointing to the internal service name
       # Open WebUI typically requires manual configuration via UI, but we ensure it can reach the host
     healthcheck:

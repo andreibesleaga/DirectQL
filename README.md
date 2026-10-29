@@ -161,11 +161,6 @@ sequenceDiagram
       > A complete, commented template lives in [`.env.example`](.env.example).
       > For secret scope and rotation guidance see [SECRETS.md](SECRETS.md).
 
-      > **Docker Compose:** the `graphql-mcp` service in `docker-compose.yml` receives only
-      > `PORT`, `GRAPHQL_MCP_ENDPOINT`, `GRAPHQL_API_KEY`, `AUTH_TYPE` and `GRAPHQL_READ_ONLY`.
-      > The guardrail, metrics and log variables above take effect with `npm start`, the stdio
-      > CLI or a deployment that sets them; in Compose, add them under that service's `environment:`.
-
     **Endpoints exposed by `graphql-mcp`**
 
     | Method & path | Purpose |
@@ -176,7 +171,9 @@ sequenceDiagram
     | `GET/POST /sse`, `POST /messages` | MCP over SSE / stateless JSON-RPC. |
 
     Requests are rate-limited to 100 per client per 15 minutes, and the routes allow
-    cross-origin requests from any origin (`mcp/graphql-mcp/src/app.js`).
+    cross-origin requests from any origin (`mcp/graphql-mcp/src/app.js`). The server has no
+    authentication of its own, so `docker-compose.yml` publishes port 3000 on `127.0.0.1` only
+    (see threat T7 in [`docs/THREAT-MODEL.md`](docs/THREAT-MODEL.md)).
 
     **MCP resources**
 

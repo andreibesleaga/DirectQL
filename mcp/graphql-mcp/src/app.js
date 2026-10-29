@@ -7,7 +7,7 @@ import { z } from "zod";
 import { config } from "./config.js";
 import logger from "./logger.js";
 import { getCachedOrFetch, listLocalSchemas, readLocalSchema } from "./cache.js";
-import { summarize } from "./utils.js";
+import { summarize, maskHeaders } from "./utils.js";
 import { validateQuery, sanitizeResponse, assertIntrospectionAllowed } from "./validator.js";
 import { register as metricsRegister } from "./metrics.js";
 
@@ -24,7 +24,7 @@ app.use(limiter);
 
 // Request Logging Middleware
 app.use((req, res, next) => {
-    logger.info("Incoming Request", { method: req.method, url: req.url, headers: summarize(req.headers) });
+    logger.info("Incoming Request", { method: req.method, url: req.url, headers: summarize(maskHeaders(req.headers)) });
     next();
 });
 

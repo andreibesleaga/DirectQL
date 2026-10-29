@@ -9,7 +9,7 @@ Helper scripts for managing the local DirectQL stack.
 
 Runs the Jest tests, then starts the full Docker Compose stack, waits for `graphql-mcp` and MindsDB to answer, and runs the E2E simulation. The stack is left running.
 
-The scripts call `docker-compose` (the standalone command), not `docker compose`. `docker-compose.yml` reserves one NVIDIA GPU for the `ollama` service (`deploy.resources.reservations.devices`).
+The scripts call `docker compose` (Compose v2). To give `ollama` an NVIDIA GPU, add the override file: `docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d`.
 
 ```bash
 ./scripts/test-local-setup.sh

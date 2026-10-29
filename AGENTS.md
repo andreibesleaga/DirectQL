@@ -36,7 +36,7 @@ npm run lint            # ESLint, report-only (warnings do not fail)
 npm start               # HTTP and SSE server on PORT (default 3000)
 ```
 
-Full stack (needs Docker, `docker-compose` and a GitHub token in `.env`): `./scripts/test-local-setup.sh`.
+Full stack (needs Docker, Docker Compose v2 (`docker compose`) and a GitHub token in `.env`): `./scripts/test-local-setup.sh`.
 
 ## Rules
 

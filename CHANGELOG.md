@@ -9,11 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Compose: `graphql-mcp` reads the root `.env` (`env_file`) and `open-webui` receives `WEBUI_SECRET_KEY`.
+- Compose: `graphql-mcp` is published on `127.0.0.1:3000` only (threat T7 added to `docs/THREAT-MODEL.md`); the NVIDIA GPU reservation for `ollama` moved to `docker-compose.gpu.yml`.
+- Scripts use `docker compose` (v2) instead of `docker-compose`.
+- Docs: `docs/CACHE.md` names `schema_sdl.graphql` as the only schema override file.
+- `graphql-mcp`: the request log now masks `Authorization`, `x-api-key` and `Cookie` headers (`maskHeaders`), with a test.
 - `graphql-mcp` (stdio mode): every log line now goes to stderr without colour codes, and dotenv runs quietly,
   so stdout carries only MCP JSON-RPC. Before, two coloured log lines reached stdout on start and strict MCP
   clients reported parse errors. HTTP mode logs to stderr as well.
 - README: the stdio command and the client configuration now point at `mcp/graphql-mcp/src/cli.js` (the old
   `mcp/graphql-mcp/cli.js` path does not exist); wording of the services list corrected.
+- `graphql-mcp`: `sanitizeResponse()` no longer throws on `null`/non-object error
+  items in an upstream GraphQL error array.
+- `graphql-mcp`: disk-tier schema cache keys are reduced to their basename,
+  preventing directory traversal via crafted cache keys.
+- Docs: corrected the CLI config example (`GRAPHQL_MCP_ENDPOINT`, was
+  `GRAPHQL_ENDPOINT`) and the bundled local-schema filename.
 
 ### Added
 
@@ -45,15 +56,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   behavior): `@modelcontextprotocol/sdk` → ^1.29, `dotenv` → ^17.4, `graphql` →
   ^16.14, `zod` → ^4.4.
 - `package.json`: declared `"license": "GPL-3.0-or-later"`.
-
-### Fixed
-
-- `graphql-mcp`: `sanitizeResponse()` no longer throws on `null`/non-object error
-  items in an upstream GraphQL error array.
-- `graphql-mcp`: disk-tier schema cache keys are reduced to their basename,
-  preventing directory traversal via crafted cache keys.
-- Docs: corrected the CLI config example (`GRAPHQL_MCP_ENDPOINT`, was
-  `GRAPHQL_ENDPOINT`) and the bundled local-schema filename.
 
 ### Security
 

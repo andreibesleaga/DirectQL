@@ -13,8 +13,8 @@ and how to validate.
 - **Asset:** `GRAPHQL_API_KEY` (GitHub PAT).
 - **Attacker:** A prompt-injected LLM coaxed into echoing the token, or log
   scraping.
-- **Mitigation:** Token is environment-only (never in code); request headers are
-  summarized in logs, i.e. long values are truncated but not masked (`src/utils.js` `summarize`); least-privilege scope
+- **Mitigation:** Token is environment-only (never in code); the `Authorization`,
+  `x-api-key` and `Cookie` request headers are redacted in logs (`src/utils.js` `maskHeaders`); least-privilege scope
   + 90-day rotation documented (`SECRETS.md`).
 - **Residual risk:** The token's blast radius equals its scope — minimize it.
 - **Validate:** Inspect logs for absence of the raw token; confirm a fine-grained
@@ -78,6 +78,20 @@ and how to validate.
   `.env.example`, `change-this-to-a-secure-random-string` in `infra/railway/railway.json`)
   must be replaced outside local dev.
 - **Validate:** `gitleaks` CI job is green; grep the repo for `github_pat_`.
+
+## T7 — Unauthenticated graphql-mcp server
+
+- **Asset:** The upstream API quota and everything the configured `GRAPHQL_API_KEY` can read.
+- **Attacker:** Anyone who can reach port 3000, including a web page open in the operator's
+  browser (CORS allows any origin).
+- **Mitigation:** `docker-compose.yml` publishes port 3000 on `127.0.0.1` only;
+  `GRAPHQL_READ_ONLY=true`, depth and complexity limits and the rate limit (100 requests per
+  15 minutes) apply to every caller (`src/validator.js`, `src/app.js`).
+- **Residual risk:** The server has no token check and answers `Access-Control-Allow-Origin: *`.
+  Any local process, or a browser page on the same machine, can issue queries with the
+  configured key's scope. Kubernetes, AWS and Railway deployments must restrict access at the
+  network layer (private service, ingress allow-list) until the server has its own token check.
+- **Validate:** From another host, `curl http://<host>:3000/health` is refused when using Compose.
 
 ---
 

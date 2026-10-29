@@ -1,3 +1,20 @@
+const SENSITIVE_HEADERS = ['authorization', 'x-api-key', 'cookie'];
+
+/**
+ * Returns a copy of the request headers with credential headers masked.
+ * Matching is case-insensitive; other headers are copied unchanged.
+ *
+ * @param {Object} headers - Request headers (e.g. req.headers).
+ * @returns {Object} - Copy with authorization, x-api-key and cookie set to "[REDACTED]".
+ */
+export function maskHeaders(headers) {
+    const masked = {};
+    for (const key of Object.keys(headers || {})) {
+        masked[key] = SENSITIVE_HEADERS.includes(key.toLowerCase()) ? '[REDACTED]' : headers[key];
+    }
+    return masked;
+}
+
 /**
  * Summarizes data for logging purposes.
  * Truncates long strings, limits array lengths, and recursively summarizes objects.

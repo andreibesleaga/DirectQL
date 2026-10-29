@@ -53,7 +53,7 @@ graph TD
 | `validator.js` | Checks a query before it is sent (syntax, read-only mode, depth, optional complexity, schema) and strips stack traces from upstream errors. |
 | `cache.js` | The three-tier schema cache, see [CACHE.md](CACHE.md). |
 | `metrics.js` | Registry behind `GET /metrics`. |
-| `utils.js`, `logger.js` | Log helpers: `summarize` shortens long values; the logger writes every level to stderr. |
+| `utils.js`, `logger.js` | Log helpers: `maskHeaders` redacts credential headers and `summarize` shortens long values; the logger writes every level to stderr. |
 
 ## What happens on `query-graphql`
 

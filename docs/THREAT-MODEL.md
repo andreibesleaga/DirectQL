@@ -13,8 +13,8 @@ and how to validate.
 - **Asset:** `GRAPHQL_API_KEY` (GitHub PAT).
 - **Attacker:** A prompt-injected LLM coaxed into echoing the token, or log
   scraping.
-- **Mitigation:** Token is environment-only (never in code); request headers are
-  summarized in logs, i.e. long values are truncated but not masked (`src/utils.js` `summarize`); least-privilege scope
+- **Mitigation:** Token is environment-only (never in code); the `Authorization`,
+  `x-api-key` and `Cookie` request headers are redacted in logs (`src/utils.js` `maskHeaders`); least-privilege scope
   + 90-day rotation documented (`SECRETS.md`).
 - **Residual risk:** The token's blast radius equals its scope — minimize it.
 - **Validate:** Inspect logs for absence of the raw token; confirm a fine-grained

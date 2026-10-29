@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `graphql-mcp`: the request log now masks `Authorization`, `x-api-key` and `Cookie` headers (`maskHeaders`), with a test.
 - `graphql-mcp` (stdio mode): every log line now goes to stderr without colour codes, and dotenv runs quietly,
   so stdout carries only MCP JSON-RPC. Before, two coloured log lines reached stdout on start and strict MCP
   clients reported parse errors. HTTP mode logs to stderr as well.

@@ -25,9 +25,9 @@ git-ignored.
    pulled.
 4. **Treat the GitHub token as the crown jewel.** An LLM that can issue arbitrary
    GraphQL queries can read anything the token can — minimize scope first.
-5. **Logs shorten, they do not mask.** Request headers are summarized in logs
-   (values longer than 100 characters are truncated; shorter values, including an
-   `Authorization` header, appear in full), and upstream error
+5. **Credential headers are redacted in logs.** `Authorization`, `x-api-key` and
+   `Cookie` request headers are logged as `[REDACTED]` (other header values over
+   100 characters are truncated), and upstream error
    stacktraces/exceptions are stripped before responses are returned.
 
 ## Rotating the GitHub token

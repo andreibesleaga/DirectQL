@@ -10,6 +10,9 @@ Implemented in [`mcp/graphql-mcp/src/cache.js`](../mcp/graphql-mcp/src/cache.js)
 2. **Local disk** — files under `mcp/graphql-mcp/schemas/`. A key `K` maps to
    `schemas/<basename(K)>.graphql`. Used as a fallback/override and seeded into
    memory on a hit. See [`schemas/README.md`](../mcp/graphql-mcp/schemas/README.md).
+   The only supported override name is `schema_sdl.graphql` (key `schema_sdl`, the schema as
+   SDL text). Do not create `parsed_schema.graphql`: that key holds a parsed schema object,
+   not text.
 3. **Remote introspection** — the configured `GRAPHQL_MCP_ENDPOINT` is introspected
    and the result cached in memory.
 

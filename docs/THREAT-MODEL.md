@@ -79,6 +79,20 @@ and how to validate.
   must be replaced outside local dev.
 - **Validate:** `gitleaks` CI job is green; grep the repo for `github_pat_`.
 
+## T7 — Unauthenticated graphql-mcp server
+
+- **Asset:** The upstream API quota and everything the configured `GRAPHQL_API_KEY` can read.
+- **Attacker:** Anyone who can reach port 3000, including a web page open in the operator's
+  browser (CORS allows any origin).
+- **Mitigation:** `docker-compose.yml` publishes port 3000 on `127.0.0.1` only;
+  `GRAPHQL_READ_ONLY=true`, depth and complexity limits and the rate limit (100 requests per
+  15 minutes) apply to every caller (`src/validator.js`, `src/app.js`).
+- **Residual risk:** The server has no token check and answers `Access-Control-Allow-Origin: *`.
+  Any local process, or a browser page on the same machine, can issue queries with the
+  configured key's scope. Kubernetes, AWS and Railway deployments must restrict access at the
+  network layer (private service, ingress allow-list) until the server has its own token check.
+- **Validate:** From another host, `curl http://<host>:3000/health` is refused when using Compose.
+
 ---
 
 _Review annually or after any architectural change. Last reviewed: 2026-06-04._

@@ -7,7 +7,9 @@ Helper scripts for managing the local DirectQL stack.
 ### `test-local-setup.sh`
 **Automated E2E setup and test.**
 
-Starts the full Docker Compose stack, waits for health checks, and runs E2E verification tests.
+Runs the Jest tests, then starts the full Docker Compose stack, waits for `graphql-mcp` and MindsDB to answer, and runs the E2E simulation. The stack is left running.
+
+The scripts call `docker-compose` (the standalone command), not `docker compose`. `docker-compose.yml` reserves one NVIDIA GPU for the `ollama` service (`deploy.resources.reservations.devices`).
 
 ```bash
 ./scripts/test-local-setup.sh

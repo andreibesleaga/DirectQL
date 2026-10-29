@@ -15,10 +15,12 @@ Implemented in [`mcp/graphql-mcp/src/cache.js`](../mcp/graphql-mcp/src/cache.js)
 
 ## TTL & eviction
 
-| Setting | Value | Source |
+| Setting | Value | Constant in `src/cache.js` |
 | ------- | ----- | ------ |
 | Memory TTL (`stdTTL`) | **3600 s** (1 hour) | `CACHE_TTL_SECONDS` |
 | Expiry check period (`checkperiod`) | **600 s** (10 min) | `CACHE_CHECK_PERIOD_SECONDS` |
+
+Both values are fixed in code; no environment variable changes them.
 
 Memory entries expire after the TTL and are re-fetched on next access. Disk files
 never expire — they are an explicit operator-provided override; delete or replace
@@ -26,7 +28,7 @@ them to invalidate. `clearCache()` flushes the memory tier.
 
 ## Cache keys
 
-Keys are internal identifiers (`parsed_schema`, `schema_sdl`, `schema`). They are
+Keys are internal identifiers (`parsed_schema`, `schema_sdl`). They are
 **not** derived from untrusted input, and the disk tier additionally reduces any
 key to `path.basename(...)`, so a crafted key cannot traverse outside `schemas/`.
 

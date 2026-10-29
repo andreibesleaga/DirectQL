@@ -14,7 +14,7 @@ and how to validate.
 - **Attacker:** A prompt-injected LLM coaxed into echoing the token, or log
   scraping.
 - **Mitigation:** Token is environment-only (never in code); request headers are
-  summarized/redacted in logs (`src/utils.js` `summarize`); least-privilege scope
+  summarized in logs, i.e. long values are truncated but not masked (`src/utils.js` `summarize`); least-privilege scope
   + 90-day rotation documented (`SECRETS.md`).
 - **Residual risk:** The token's blast radius equals its scope — minimize it.
 - **Validate:** Inspect logs for absence of the raw token; confirm a fine-grained
@@ -74,8 +74,9 @@ and how to validate.
 - **Attacker:** Anyone reading the repo or image.
 - **Mitigation:** `.env` and `.env.local` are git-ignored; `.env.example` holds
   placeholders only; gitleaks runs in CI (`security-baseline.yml`).
-- **Residual risk:** The default `WEBUI_SECRET_KEY=local-dev-secret-key` must be
-  replaced outside local dev.
+- **Residual risk:** The `WEBUI_SECRET_KEY` placeholders (`change-me-in-production` in
+  `.env.example`, `change-this-to-a-secure-random-string` in `infra/railway/railway.json`)
+  must be replaced outside local dev.
 - **Validate:** `gitleaks` CI job is green; grep the repo for `github_pat_`.
 
 ---

@@ -22,7 +22,7 @@ npm ci
 
 ## Development workflow
 
-Run the gates locally before opening a PR — these mirror CI:
+Run the gates locally before opening a PR — these mirror CI, except `npm run lint`, which CI does not run:
 
 ```bash
 cd mcp/graphql-mcp
@@ -37,6 +37,17 @@ Full-stack end-to-end (requires Docker and a GitHub token in `.env`):
 ./scripts/test-local-setup.sh           # builds the stack, runs e2e_simulation.js
 node mcp/graphql-mcp/test/e2e/mcp_protocol.js   # MCP protocol suite vs a running server
 ```
+
+## CI
+
+| Workflow | Runs on | What it does |
+| --- | --- | --- |
+| `ci-cd.yml` | push and pull request to `main` | In `mcp/graphql-mcp`: `npm ci`, `npm test`, `npm run test:security` on Node 22 |
+| `security-baseline.yml` | push and pull request to `main`, weekly (Monday 06:00 UTC) | npm audit, CycloneDX SBOM, licence allow-list, OSV-Scanner, Trivy (files and the `graphql-mcp` image), gitleaks. Audit, licence, OSV and image-scan steps are report-only (`continue-on-error`) |
+| `pages.yml` | push to `main` that changes `site/**` or the workflow, or manual run | Publishes `site/` to GitHub Pages |
+
+Dependabot (`.github/dependabot.yml`) opens weekly update PRs for the npm packages in
+`mcp/graphql-mcp`, the GitHub Actions and the `graphql-mcp` Docker base image.
 
 ## Pull-request checklist
 

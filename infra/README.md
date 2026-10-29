@@ -5,7 +5,7 @@ This directory contains resources for deploying the DirectQL stack to various en
 ## 1. Kubernetes
 **Path**: `infra/kubernetes/manifests.yaml`
 
-A single-file manifest defining a Pod with 3 containers (Sidecar pattern):
+A single-file manifest defining a Pod with 4 containers (Sidecar pattern):
 - **Ollama**: Local LLM runner.
 - **GraphQL-MCP**: The MCP server.
 - **MindsDB (db-mcp)**: Data federation and SQL AI agent service.
@@ -17,7 +17,10 @@ kubectl apply -f infra/kubernetes/manifests.yaml
 ```
 
 **Notes**:
-- Includes `PersistentVolumeClaims` for Ollama models and WebUI data.
+- Includes `PersistentVolumeClaims` for Ollama models, WebUI data and MindsDB storage.
+- The `graphql-mcp` container uses the placeholder image `my-registry/graphql-mcp:latest`; build
+  and push your own (`docker build -f mcp/graphql-mcp/Dockerfile .` from the repository root) and
+  change the image in `manifests.yaml`.
 - Ensure you create the secret for the GitHub API key:
 ```bash
 kubectl create secret generic directql-secrets --from-literal=graphql-api-key=YOUR_TOKEN
@@ -69,7 +72,7 @@ This file defines the services for a Railway One-Click deploy or monorepo setup.
 - **DirectQL (Open WebUI)**: Deployed from `open-webui/` directory.
   - Variables: `OPENAI_API_BASE_URL` (defaults to OpenRouter), `OPENAI_API_KEY`.
 - **MindsDB MCP**: Deployed from `mcp/db-mcp/` directory.
-  - Variables: `MINDSDB_APIS` (http,mysql), `MINDSDB_PORT_HTTP`, `MINDSDB_PORT_MYSQL`.
+  - Variables: `MINDSDB_APIS` (http,mysql), `MINDSDB_PORT_MYSQL`.
 
 **Deploy**:
 1.  Push this repo to GitHub.
@@ -78,4 +81,4 @@ This file defines the services for a Railway One-Click deploy or monorepo setup.
 4.  Railway should detect `railway.json` and prompt for the defined variables.
 
 **Networking**:
-Both services will be deployed. Ensure Open WebUI is configured to reach the GraphQL MCP service. In Railway, you typically use the private networking DNS or the public URL if exposed.
+All three services will be deployed. Ensure Open WebUI is configured to reach the GraphQL MCP service. In Railway, you typically use the private networking DNS or the public URL if exposed.

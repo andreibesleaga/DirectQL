@@ -28,8 +28,9 @@ guidance. In short:
 
 - **Never commit a real key.** Only `.env.example` (placeholders) is tracked;
   `.env` and `.env.local` are git-ignored.
-- **Never log the key.** `graphql-mcp` summarizes/redacts request headers in logs
-  (`src/utils.js`), and upstream error extensions are stripped
+- **Never log the key.** `graphql-mcp` logs a shortened summary of request headers
+  (`summarize` in `src/utils.js`: values over 100 characters are truncated, shorter ones are
+  not masked), and upstream error extensions are stripped
   (`sanitizeResponse` in `src/validator.js`).
 - **Use a least-privilege, project-scoped key** and rotate at least every 90 days.
 - **Run read-only by default** (`GRAPHQL_READ_ONLY=true`) so an LLM cannot issue

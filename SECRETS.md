@@ -11,7 +11,7 @@ git-ignored.
 | ------ | ------- | ------------- | -------- |
 | `GRAPHQL_API_KEY` (GitHub PAT) | `graphql-mcp` | A **fine-grained** PAT with **read-only** access to only the repos/orgs you intend to query. For public-data demos, a classic token with `read:public_repo` (or no scopes) is usually enough. **Do not** grant `repo` (full) unless required. | ≤ 90 days |
 | `OPENAI_API_KEY` / OpenRouter key | `open-webui` | A project-scoped key. Set a hard billing ceiling at the provider so a runaway agent loop cannot run up unbounded cost. | ≤ 90 days |
-| `WEBUI_SECRET_KEY` | `open-webui` | A long random string (e.g. `openssl rand -hex 32`). The committed value `local-dev-secret-key` is for **local dev only** — replace it in any shared/production deploy. | On deploy / on compromise |
+| `WEBUI_SECRET_KEY` | `open-webui` | A long random string (e.g. `openssl rand -hex 32`). The placeholders `change-me-in-production` (`.env.example`) and `change-this-to-a-secure-random-string` (the default in `infra/railway/railway.json`) are not secrets — replace them in any shared/production deploy. | On deploy / on compromise |
 | MindsDB data-source credentials | `db-mcp` | Per-source least-privilege DB users (prefer read-only). Configured at runtime via `CREATE DATABASE`, never baked into images. | Per your DB policy |
 
 ## Rules
@@ -25,9 +25,10 @@ git-ignored.
    pulled.
 4. **Treat the GitHub token as the crown jewel.** An LLM that can issue arbitrary
    GraphQL queries can read anything the token can — minimize scope first.
-5. **Redaction is on by default.** Request headers are summarized in logs and
-   upstream error stacktraces/exceptions are stripped before responses are
-   returned.
+5. **Logs shorten, they do not mask.** Request headers are summarized in logs
+   (values longer than 100 characters are truncated; shorter values, including an
+   `Authorization` header, appear in full), and upstream error
+   stacktraces/exceptions are stripped before responses are returned.
 
 ## Rotating the GitHub token
 

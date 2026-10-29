@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Docs: added `AGENTS.md` and `docs/ARCHITECTURE.md`, a CI section in `CONTRIBUTING.md`, and corrected statements on header logging, `WEBUI_SECRET_KEY`, the Compose environment, the helper scripts and the infra notes.
 - CI (`ci-cd.yml`): upgraded to `actions/checkout@v4` + `actions/setup-node@v4`,
   standardized on the **Node 22 LTS** runner, and now runs both `npm test` and
   `npm run test:security`.

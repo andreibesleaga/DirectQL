@@ -28,6 +28,8 @@ images wired together in [`docker-compose.yml`](docker-compose.yml) and `infra/`
 
 | Doc | Contents |
 |---|---|
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Components of `graphql-mcp` and the path of one query. |
+| [AGENTS.md](AGENTS.md) | Short form for coding agents: layout, commands, rules. |
 | [SECURITY.md](SECURITY.md) | Disclosure policy + secret/API-key handling. |
 | [SECRETS.md](SECRETS.md) | Per-secret scope minimization and rotation. |
 | [docs/THREAT-MODEL.md](docs/THREAT-MODEL.md) | T1–T6 threats and shipped mitigations. |
@@ -159,6 +161,11 @@ sequenceDiagram
       > A complete, commented template lives in [`.env.example`](.env.example).
       > For secret scope and rotation guidance see [SECRETS.md](SECRETS.md).
 
+      > **Docker Compose:** the `graphql-mcp` service in `docker-compose.yml` receives only
+      > `PORT`, `GRAPHQL_MCP_ENDPOINT`, `GRAPHQL_API_KEY`, `AUTH_TYPE` and `GRAPHQL_READ_ONLY`.
+      > The guardrail, metrics and log variables above take effect with `npm start`, the stdio
+      > CLI or a deployment that sets them; in Compose, add them under that service's `environment:`.
+
     **Endpoints exposed by `graphql-mcp`**
 
     | Method & path | Purpose |
@@ -167,6 +174,9 @@ sequenceDiagram
     | `GET /metrics` | Prometheus metrics incl. `directql_schema_cache_*` (toggle `METRICS_ENABLED`). |
     | `GET /openapi.json` | Minimal OpenAPI description of the MCP surface. |
     | `GET/POST /sse`, `POST /messages` | MCP over SSE / stateless JSON-RPC. |
+
+    Requests are rate-limited to 100 per client per 15 minutes, and the routes allow
+    cross-origin requests from any origin (`mcp/graphql-mcp/src/app.js`).
 
     **MCP resources**
 
@@ -216,9 +226,11 @@ The project includes several helper scripts to verify the stack locally using Do
 -   **Purpose**: Automated End-to-End (E2E) Setup & Test.
 -   **Actions**:
     1.  Cleans up existing Docker containers.
-    2.  Builds and starts the full stack (`graphql-mcp`, `ollama`, `open-webui`).
-    3.  Waits for health checks.
-    4.  Runs an E2E simulation script (`e2e_simulation.js`) against the local stack to verify connectivity and functionality.
+    2.  Runs the Jest tests (`npm test` in `mcp/graphql-mcp`).
+    3.  Builds and starts the full stack (`graphql-mcp`, `ollama`, `open-webui`, `db-mcp`).
+    4.  Waits for `graphql-mcp` (`/health`) and MindsDB (`/api/status`), and checks that `open-webui` and `db-mcp` are running.
+    5.  Runs an E2E simulation script (`e2e_simulation.js`) against the local stack to verify connectivity and functionality.
+    6.  Leaves the stack running.
 
 > **Note:** This script does NOT download Ollama models automatically. Use `pull-ollama-model.sh` after the stack is running to download models.
 
@@ -246,7 +258,7 @@ The project includes several helper scripts to verify the stack locally using Do
     -   Scans recent logs for errors.
     -   Streams live logs from all containers.
 
-### 4. `./mcp/graphql-mcp/src/cli.js`
+#### 4. `./mcp/graphql-mcp/src/cli.js`
 **Usage**: `node mcp/graphql-mcp/src/cli.js`
 -   **Purpose**: GraphQL MCP Server CLI - for proxying MCP to AI assistant.
 -   **Configuration**: edit your AI assistant's configuration file to run the MCP server:

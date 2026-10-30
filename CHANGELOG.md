@@ -14,6 +14,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Scripts use `docker compose` (v2) instead of `docker-compose`.
 - Docs: `docs/CACHE.md` names `schema_sdl.graphql` as the only schema override file.
 - `graphql-mcp`: the request log now masks `Authorization`, `x-api-key` and `Cookie` headers (`maskHeaders`), with a test.
+
+### Changed
+
+- Docs: added `AGENTS.md` and `docs/ARCHITECTURE.md`, a CI section in `CONTRIBUTING.md`, and corrected statements on header logging, `WEBUI_SECRET_KEY`, the Compose environment, the helper scripts and the infra notes.
+- `graphql-mcp`: `engines.node >= 22` (Node 20 is end of life); `CONTRIBUTING.md` and `AGENTS.md` state the same floor.
+
+## [0.2.0-beta] — 2026-10-23
+
+### Fixed
+
 - `graphql-mcp` (stdio mode): every log line now goes to stderr without colour codes, and dotenv runs quietly,
   so stdout carries only MCP JSON-RPC. Before, two coloured log lines reached stdout on start and strict MCP
   clients reported parse errors. HTTP mode logs to stderr as well.
@@ -47,7 +57,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Docs: added `AGENTS.md` and `docs/ARCHITECTURE.md`, a CI section in `CONTRIBUTING.md`, and corrected statements on header logging, `WEBUI_SECRET_KEY`, the Compose environment, the helper scripts and the infra notes.
 - CI (`ci-cd.yml`): upgraded to `actions/checkout@v4` + `actions/setup-node@v4`,
   standardized on the **Node 22 LTS** runner, and now runs both `npm test` and
   `npm run test:security`.
@@ -66,7 +75,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `brace-expansion`) via a semver-compatible `npm audit fix` — lockfile only, no
   direct-dependency or API changes. `npm audit` now reports **0 vulnerabilities**.
 
-## [1.0.0]
+## [0.1.0-alpha] — 2026-02-09
 
 ### Added
 
@@ -74,5 +83,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (`db-mcp`) composed via Docker Compose, with multi-target infra (Kubernetes,
   AWS, Railway).
 
-[Unreleased]: https://github.com/andreibesleaga/DirectQL/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/andreibesleaga/DirectQL/releases/tag/v1.0.0
+[Unreleased]: https://github.com/andreibesleaga/DirectQL/compare/v0.2.0-beta...HEAD
+[0.2.0-beta]: https://github.com/andreibesleaga/DirectQL/compare/v0.1.0-alpha...v0.2.0-beta
+[0.1.0-alpha]: https://github.com/andreibesleaga/DirectQL/releases/tag/v0.1.0-alpha

@@ -14,7 +14,7 @@ configured in `docker-compose.yml` and `infra/`.
 
 | Path | Contents |
 | --- | --- |
-| `mcp/graphql-mcp/` | The Node.js (ESM, Node 22 LTS, `engines` `>=20`) MCP server: `src/`, `test/`, `schemas/`, `Dockerfile` |
+| `mcp/graphql-mcp/` | The Node.js (ESM, Node 22 LTS, `engines` `>=22`) MCP server: `src/`, `test/`, `schemas/`, `Dockerfile` |
 | `mcp/db-mcp/`, `open-webui/`, `ollama/` | Dockerfiles and notes for the upstream services |
 | `scripts/` | Helper scripts for the local stack (`test-local-setup.sh`, `pull-ollama-model.sh`, `monitor-stack.sh`) |
 | `infra/` | Kubernetes manifest, AWS Terraform, Railway definition |
